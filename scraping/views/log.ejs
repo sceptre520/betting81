@@ -1,0 +1,14 @@
+<% if(log == null) { %>
+  <!-- <p>no log</p> -->
+<% } else { %>
+  <tr>
+    <td colspan="3"> -- LOG -- </td>
+  </tr>
+  <% for(x in log) { %>
+  	<tr>
+	    <td style="width: 120px;"><%= x %></td>
+      <td style="width: 120px;"><%= log[x]['run_time'] %></td>
+	    <td style="word-break:break-all;"><div style="height: 50px; overflow:hidden;"><%= JSON.stringify(log[x]['log']) %></div></td>
+    </tr>
+  <% } %>
+<% } %>
