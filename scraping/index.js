@@ -48,7 +48,6 @@ cron.schedule('*/5 * * * * *', function() {
 });
 
 
-//PORT
 const port = process.env.PORT || 8100;
 
 app.set('views', __dirname + '/views');
