@@ -63,9 +63,8 @@ app.get('/', function(req, res, next) {
   })
 });
 
-//Starting a server
 app.listen(port, () => {
-  console.log(`app is running at ${port}`);
+  console.log(`scraper-schedule is running at ${port}`);
 });
 
 function getNow() {
