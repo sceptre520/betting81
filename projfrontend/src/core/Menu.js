@@ -15,10 +15,14 @@ const currentTab = (history, path) => {
 };
 
 const Menu = ({ history }) => (
-  <nav className="navbar navbar-expand-md bg-info">
+  <nav className="navbar navbar-expand-md bg-grad-blue-green">
     <ul className="nav nav-tabs mr-auto">
       <li className="nav-item">
-        <Link style={currentTab(history, "/")} className="nav-link" to="/">
+        <Link
+          style={currentTab(history, "/player-prop-arbitrage-betting-service")}
+          className="nav-link"
+          to="/player-prop-arbitrage-betting-service"
+        >
           Home
         </Link>
       </li>
@@ -29,6 +33,33 @@ const Menu = ({ history }) => (
           to="/about"
         >
           About
+        </Link>
+      </li>
+      <li className="nav-item">
+        <Link
+          style={currentTab(history, "/how-to-find-player-prop-arb-bets")}
+          className="nav-link"
+          to="/how-to-find-player-prop-arb-bets"
+        >
+          How To Bet Player Props
+        </Link>
+      </li>
+      <li className="nav-item">
+        <Link
+          style={currentTab(history, "/nfl-player-prop-arb-bets")}
+          className="nav-link"
+          to="/nfl-player-prop-arb-bets"
+        >
+          NFL
+        </Link>
+      </li>
+      <li className="nav-item">
+        <Link
+          style={currentTab(history, "/arbs")}
+          className="nav-link"
+          to="/arbs"
+        >
+          Arbs + Middles
         </Link>
       </li>
       {isAutheticated() && isAutheticated().user.role === 0 && (
@@ -54,44 +85,46 @@ const Menu = ({ history }) => (
         </li>
       )}
     </ul>
-    <ul className="nav nav-tabs ml-auto">
-      {!isAutheticated() && (
-        <Fragment>
-          <li className="nav-item bg-success">
-            <Link
-              style={currentTab(history, "/signup")}
-              className="nav-link"
-              to="/signup"
+    {false && (
+      <ul className="nav nav-tabs ml-auto">
+        {!isAutheticated() && (
+          <Fragment>
+            <li className="nav-item bg-success">
+              <Link
+                style={currentTab(history, "/signup")}
+                className="nav-link"
+                to="/signup"
+              >
+                Signup
+              </Link>
+            </li>
+            <li className="nav-item bg-warning">
+              <Link
+                style={currentTab(history, "/signin")}
+                className="nav-link"
+                to="/signin"
+              >
+                Sign In
+              </Link>
+            </li>
+          </Fragment>
+        )}
+        {isAutheticated() && (
+          <li className="nav-item">
+            <span
+              className="nav-link text-warning"
+              onClick={() => {
+                signout(() => {
+                  history.push("/");
+                });
+              }}
             >
-              Signup
-            </Link>
+              Signout
+            </span>
           </li>
-          <li className="nav-item bg-warning">
-            <Link
-              style={currentTab(history, "/signin")}
-              className="nav-link"
-              to="/signin"
-            >
-              Sign In
-            </Link>
-          </li>
-        </Fragment>
-      )}
-      {isAutheticated() && (
-        <li className="nav-item">
-          <span
-            className="nav-link text-warning"
-            onClick={() => {
-              signout(() => {
-                history.push("/");
-              });
-            }}
-          >
-            Signout
-          </span>
-        </li>
-      )}
-    </ul>
+        )}
+      </ul>
+    )}
   </nav>
 );
 

@@ -1,0 +1,13 @@
+body#Scraper_body {
+    background-color: rgb(152 162 220 / 49%);
+    padding: 10px 20px;
+}
+#Scraper_body > h2, #Scraper_body > h3 {
+	text-align: center;
+}
+#Scraper_body td[colspan] {
+    color: rgba(255, 0, 0, 0.849);
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+}

@@ -52,6 +52,54 @@ exports.deleteMarketsFromDB = () => {
     });
 };
 
+exports.deleteOldMatchesFromDB = () => {
+  return fetch(`${APIurl}/matches/delete/old`, {
+    method: "DELETE",
+  })
+    .then((res) => {
+      console.log("successfully deleted");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+exports.deleteOneSportsbookMarketsFromDB = (sportsbook) => {
+  return fetch(`${APIurl}/markets/delete/${sportsbook}`, {
+    method: "DELETE",
+  })
+    .then((res) => {
+      console.log("successfully deleted");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+exports.deleteOneSportsbookExtMatchesFromDB = (sportsbook) => {
+  return fetch(`${APIurl}/externalmatches/delete/${sportsbook}`, {
+    method: "DELETE",
+  })
+    .then((res) => {
+      console.log("successfully deleted");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+exports.deleteArbsFromDB = () => {
+  return fetch(`${APIurl}/arb/delete`, {
+    method: "DELETE",
+  })
+    .then((res) => {
+      console.log("successfully deleted");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
 //////////Read from DB//////////
 
 exports.queryForAllTeams = () => {
@@ -94,6 +142,34 @@ exports.queryForAllExternalMatches = () => {
   });
 
   return matchList;
+};
+
+exports.queryForAllMarkets = () => {
+  async function getAllMarketsInDB() {
+    return fetch(`${APIurl}/markets`).then((matches) => {
+      return matches.json();
+    });
+  }
+
+  let matchList = getAllMarketsInDB().then((output) => {
+    return output;
+  });
+
+  return matchList;
+};
+
+exports.queryForAllArbs = () => {
+  async function getAllArbsInDB() {
+    return fetch(`${APIurl}/arb/all`).then((arbs) => {
+      return arbs.json();
+    });
+  }
+
+  let arbList = getAllArbsInDB().then((output) => {
+    return output;
+  });
+
+  return arbList;
 };
 
 //////////Write to DB//////////
@@ -157,4 +233,39 @@ exports.writeMarketsToDB = (Outcomes) => {
     //console.log("I am not array");
     createMarketInDB(Outcomes);
   }
+};
+
+exports.createArbInDB = (arb) => {
+  fetch(`${APIurl}/arb/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(arb),
+  }).then((response, err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(response);
+      // console.log("Everything is great");
+    }
+  });
+};
+
+////////////////POST TO SLACK///////////////////////
+
+exports.postInSlack = (url, payload) => {
+  fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  }).then((response, err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(response);
+    }
+  });
 };

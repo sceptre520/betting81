@@ -85,26 +85,18 @@ exports.createMarketFromScraper = (req, res) => {
 //   return res.json(req.match);
 // };
 
-// exports.getAllMatches = (req, res) => {
-//   let limit = req.query.limit ? parseInt(req.query.limit) : 9;
-//   let sortBy = req.query.sortBy ? req.query.sortBy : "_id";
-
-//   Match.find()
-//     .populate("homeTeam")
-//     .select("-homeTeam.logo")
-//     .populate("awayTeam")
-//     .select("-awayTeam.logo")
-//     .sort([[sortBy, "asc"]])
-//     .limit(limit)
-//     .exec((err, matches) => {
-//       if (err) {
-//         return res.status(400).json({
-//           error: "NO matches FOUND",
-//         });
-//       }
-//       res.json(matches);
-//     });
-// };
+exports.getAllMarkets = (req, res) => {
+  Market.find()
+    .populate("matchId")
+    .exec((err, markets) => {
+      if (err) {
+        return res.status(400).json({
+          error: "NO markets FOUND",
+        });
+      }
+      res.json(markets);
+    });
+};
 
 // //middleware
 // exports.logo = (req, res, next) => {
@@ -117,6 +109,20 @@ exports.createMarketFromScraper = (req, res) => {
 
 exports.deleteAllMarkets = (req, res) => {
   Market.remove({}, (err) => {
+    if (err) {
+      return res.status(400).json({
+        error: "Failed to delete the markets",
+      });
+    }
+    res.json({
+      message: "Deletion was a success",
+    });
+  });
+};
+
+exports.deleteMarketsForOneSportsbook = (req, res) => {
+  const { sportsbook } = req.params;
+  Market.deleteMany({ sportsbook: sportsbook }, (err) => {
     if (err) {
       return res.status(400).json({
         error: "Failed to delete the markets",

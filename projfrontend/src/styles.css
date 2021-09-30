@@ -1,10 +1,174 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap");
+
 .btn,
 .jumbotron,
 .nav :hover {
   border-radius: 0px;
 }
 
-body {
-  background: #343a40;
+body,
+footer {
+  /* background: #343a40; */
+  background-color: #12232e;
   /*overflow: hidden;*/
+  font-family: "Roboto Condensed", sans-serif;
+}
+
+.markgreen {
+  background-color: #99ff99;
+}
+
+.infoBorder {
+  border-style: solid;
+  border-color: #287ec7;
+}
+
+.bg-grad-blue-green {
+  background-color: #007cc7;
+}
+
+.bg-info-alt {
+  background-color: #007cc7;
+}
+
+.bg-success-alt {
+  /* background-color: #00bc40; */
+  background-color: #4da8da;
+}
+
+.bg-dark-alt {
+  background: #12232e;
+}
+
+.bg-light-alt {
+  background-color: #eefbfb;
+}
+
+.bg-warning-alt {
+  background-color: #203647;
+}
+
+.card-shadow {
+  box-shadow: 10px 10px 5px #203647;
+}
+
+div.card-matches {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+div.card-matches-margins {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  display: flex;
+}
+
+div.card-markets {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+table {
+  display: block;
+  max-width: -moz-fit-content;
+  max-width: fit-content;
+  margin: 0 auto;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+ul.NoBullet {
+  list-style-type: none;
+}
+
+.NFL-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.NFL-img {
+  max-width: 100%;
+  height: auto;
+  width: auto\9; /* ie8 */
+}
+
+@media only screen and (max-width: 600px) {
+  body {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0px;
+  }
+
+  h1 {
+    font-size: 4vw;
+    word-wrap: break-word;
+    white-space: normal;
+  }
+
+  h2 {
+    font-size: 1vh;
+  }
+
+  p.lead {
+    font-size: 4vh;
+  }
+
+  p.date {
+    font-size: 8vw;
+  }
+
+  p {
+    word-break: break-all;
+    white-space: normal;
+  }
+
+  p.HowTo {
+    font-size: 4vh;
+    word-break: break-word;
+  }
+
+  Link.HowTo {
+    font-size: 4vh;
+    word-break: break-word;
+  }
+
+  div.card-header {
+    font-size: 5vw;
+  }
+
+  div.card-matches {
+    column-count: 2;
+  }
+
+  div.card-matches-margins {
+    margin-right: 15px;
+    margin-bottom: 15px;
+  }
+
+  h1.matchPageHeader {
+    font-size: 12vw;
+    word-break: break-word;
+  }
+
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
 }

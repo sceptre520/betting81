@@ -25,14 +25,14 @@ export default function Home_Match() {
 
   return (
     <Base
-      title="Odds Comparison Tool - Player Props"
-      description="Select a Match to Analyse"
+      title="Compare Player Prop Bets and Arbs"
+      description="Select a match to analyse from NFL, NBA, MLB and more"
     >
-      <div className="row container-fluid text-center align-center">
-        <div className="row container-fluid">
+      <div className="row container-fluid text-center align-center mt-0">
+        <div className="row container-fluid card-matches p-2">
           {matches.map((match, index) => {
             return (
-              <div key={index} className="col-4 mb-4">
+              <div key={index} className="card-matches-margins mb-4">
                 <CardMatches match={match} />
               </div>
             );

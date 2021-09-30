@@ -6,8 +6,8 @@ import { signin, authenticate, isAutheticated } from "../auth/helper";
 
 const Signin = () => {
   const [values, setValues] = useState({
-    email: "declanwalpole2@declan.com",
-    password: "123345",
+    email: "",
+    password: "",
     error: "",
     loading: false,
     didRedirect: false,
@@ -41,7 +41,7 @@ const Signin = () => {
 
   const performRedirect = () => {
     if (didRedirect) {
-      return <Redirect to="/" />;
+      return <Redirect to="/player-prop-arbitrage-betting-service" />;
     }
   };
 
@@ -104,17 +104,19 @@ const Signin = () => {
   };
 
   return (
-    <Base title="Sign In" description="Only signed in users can view odds">
+    <Base
+      title="Sign In"
+      description="Signed in users can apply odds preferences and unlock additional content"
+    >
       {loadingMessage()}
       {errorMessage()}
-      {signInForm()}
-      {performRedirect()}
-
       <p className="text-white text-center font-italic font-weight-light">
         <Link to="/signup" className="text-center text-warning">
-          If you do not have an account already, click here to sign up.
+          If you do not have an account already, click here to <b>SIGN UP</b>.
         </Link>
       </p>
+      {signInForm()}
+      {performRedirect()}
     </Base>
   );
 };

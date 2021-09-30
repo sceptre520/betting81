@@ -24,16 +24,15 @@ const CardMatches = ({ match }) => {
   };
 
   return (
-    <div className="card text-white bg-dark border border-white">
-      <div className="card-header lead">
+    <div className="card text-white bg-light-alt card-shadow">
+      <div className="card-header lead bg-info-alt">
         {match.awayTeam.name} @ {match.homeTeam.name}
       </div>
-
       {getARedirect(redirect)}
       <div className="card-body">
+        <h6 className="card-subtitle mb-2 text-warning">{match.league}</h6>
+
         <h6 className="card-subtitle mb-2 text-muted">
-          {match.league}
-          <br />
           {convertUTCDateToLocalDate(match.date).toLocaleDateString("en-gb", {
             year: "numeric",
             month: "short",
@@ -42,19 +41,19 @@ const CardMatches = ({ match }) => {
         </h6>
         <div className="row">
           <div className="col-6">
-            <LogoHelper teamId={match.awayTeam._id} />
+            <LogoHelper team={match.awayTeam} />
           </div>
           <div className="col-6">
-            <LogoHelper teamId={match.homeTeam._id} />
+            <LogoHelper team={match.homeTeam} />
           </div>
         </div>
         <div className="row">
           <div className="col-12">
             <button
               onClick={doSomething}
-              className="btn btn-block btn-outline-info mt-2 mb-2"
+              className="btn btn-block mt-0 mb-0 font-weight-bold bg-success-alt text-white"
             >
-              Match Center
+              Click to see all markets
             </button>
           </div>
         </div>

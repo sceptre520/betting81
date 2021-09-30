@@ -75,10 +75,15 @@ Promise.resolve(matchList)
               Promise.resolve(sportsbetOdds).then((sportsbetOdds) => {
                 //console.log(sportsbetOdds);
 
-                let stats = ["Points", "Assists", "Rebounds"]; //I have no idea what is the naming convention
+                let stats = ["Points", "Assists", "Rebounds", "First Basket"];
+
                 for (const stat of stats) {
                   const playerMarkets = sportsbetOdds.filter((o) => {
-                    return o.name.includes(` - ${stat}`); //I have no idea what is the naming convention. More probably .type is a unique identifier
+                    if (stat === "First Basket") {
+                      return o.name === stat;
+                    } else {
+                      return o.name.includes(` - ${stat}`);
+                    }
                   });
 
                   let Outcomes;
@@ -88,15 +93,16 @@ Promise.resolve(matchList)
                       return o.statusCode === "A";
                     });
 
-                    playerMarkets.map((o) => {
-                      //console.log(o);
-
+                    pointsMarkets.map((o) => {
                       let playerName = o.name.split(" - ")[0];
-                      //console.log(playerName);
+                      // //console.log(playerName);
 
                       Outcomes = o.selections.map((outcome) => {
-                        //let playerName = playerName;
-                        let handicap = Number(outcome.unformattedHandicap);
+                        let playerName = outcome.name;
+
+                        let handicap = outcome.unformattedHandicap
+                          ? Number(outcome.unformattedHandicap)
+                          : 0;
                         let overPrice;
                         let underPrice;
                         if (outcome.name.includes("Over")) {
@@ -116,13 +122,23 @@ Promise.resolve(matchList)
                           handicap: handicap,
                           matchId: matchId,
                         };
+
+                        //console.log(myObject);
                         return myObject;
                       });
 
-                      // loop over players and handicaps to see if there is an under to their over
-                      const revisedOutcomes = Outcomes.map((outcome) => {
+                      let Outcomes2 = Outcomes;
+                      if (!stat === "First Basket") {
+                        Outcomes2 = Outcomes.map((o) => {
+                          o.player = playerName;
+                          return o;
+                        });
+                      }
+
+                      // // loop over players and handicaps to see if there is an under to their over
+                      const revisedOutcomes = Outcomes2.map((outcome) => {
                         if (outcome.overPrice) {
-                          const underSelection = Outcomes.filter((o) => {
+                          const underSelection = Outcomes2.filter((o) => {
                             return (
                               o.player === outcome.player &&
                               o.handicap === outcome.handicap &&
@@ -142,6 +158,7 @@ Promise.resolve(matchList)
                         return o; //removes undefineds
                       });
 
+                      //console.log(filteredOutcomes);
                       writeMarketsToDB(filteredOutcomes);
                     });
                   }

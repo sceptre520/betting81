@@ -7,14 +7,19 @@ import Menu from "../core/Menu";
 import LogoHelper from "../core/helper/LogoHelper";
 import { getMarketsFromMatch } from "../core/helper/marketHelper";
 import CardMarkets from "../core/CardMarkets";
+import CardMarkets_NHL from "../core/CardMarkets_NHL";
+import CardMarkets_NFL from "../core/CardMarkets_NFL";
+
 import { getMatches } from "../core/helper/matchHelper";
 import { getPlayers } from "../core/helper/playerHelper";
+import { getAUser } from "../user/helper/userapicalls";
 
 const MatchMarkets = ({ match }) => {
   const { user, token } = isAutheticated();
 
   const [markets, setMarkets] = useState([]);
   const [allMatches, setallMatches] = useState([]);
+  const [oddsPref, setOddsPref] = useState([]);
   //const [allPlayersFromDB, setallPlayersFromDB] = useState([]);
   const [selectedDropdown, setselectedDropdown] = useState(false);
   const [values, setValues] = useState({
@@ -22,6 +27,7 @@ const MatchMarkets = ({ match }) => {
     homeTeam: "",
     awayTeam: "",
     date: "",
+    league: "",
     loading: false,
     error: "",
     getaRedirect: false,
@@ -35,6 +41,7 @@ const MatchMarkets = ({ match }) => {
     homeTeam,
     awayTeam,
     date,
+    league,
     loading,
     error,
     createdProduct,
@@ -57,6 +64,7 @@ const MatchMarkets = ({ match }) => {
             awayTeam: data.awayTeam,
             homeTeam: data.homeTeam,
             date: data.date,
+            league: data.league,
           });
         }
       })
@@ -74,17 +82,34 @@ const MatchMarkets = ({ match }) => {
           setallMatches(data);
         });
       });
-    // .then(() => {
-    //   //grab the BallDontLie player data from mongo DB
-    //   getPlayers().then((data) => {
-    //     setallPlayersFromDB(data);
-    //   });
-    // });
+  };
+
+  const preloadUserPreferences = (userId) => {
+    getAUser(userId).then((user) => {
+      setOddsPref(user.oddsPreference);
+    });
   };
 
   useEffect(() => {
     preload(match.params.matchId);
+    if (user) {
+      preloadUserPreferences(user._id);
+    } else {
+      setOddsPref(true);
+    }
   }, []);
+
+  const mutation = (LongerString, ShorterString) => {
+    var value1 = LongerString.toLowerCase();
+    var value2 = ShorterString.toLowerCase();
+
+    for (var i = 0; i < value2.length; i++) {
+      if (value1.indexOf(value2.charAt(i)) === -1) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   const uniquePlayers = markets
     .filter((o) => {
@@ -98,22 +123,22 @@ const MatchMarkets = ({ match }) => {
         .toLowerCase();
       return lowercaseName.replace(/[^\w\s]/gi, "");
     })
-    .filter((value, index, self) => self.indexOf(value) === index);
-
-  const triggerForButton = () => {};
+    .filter((value, index, self) => self.indexOf(value) === index)
+    .filter((value, index, self) => {
+      return !self.some((o) => {
+        if (o !== value) {
+          return (
+            mutation(o, value) && o.substring(0, 1) === value.substring(0, 1)
+          );
+        }
+      });
+    })
+    .filter((o) => {
+      return !o.includes("efense") && !o.includes("ouchdown");
+    });
 
   const toggleAmerican = () => {
-    setValues({
-      ...values,
-      isAmerican: !isAmerican,
-    });
-  };
-
-  const toggleUnder = () => {
-    setValues({
-      ...values,
-      isUnder: !isUnder,
-    });
+    setOddsPref(1 - oddsPref);
   };
 
   const SetRelevantMatch = (event) => {
@@ -125,18 +150,43 @@ const MatchMarkets = ({ match }) => {
     window.open(`../match/${selectedDropdown}`, "_self");
   };
 
+  const convertUTCDateToLocalDate = (date) => {
+    var dateLocal = new Date(date);
+    var newDate = new Date(
+      dateLocal.getTime() - dateLocal.getTimezoneOffset() * 60 * 1000
+    );
+    return newDate;
+  };
+
+  const GetPlayerDropdownList = (uniquePlayers) => {
+    const up = uniquePlayers;
+    const out = up.sort().map((player, index) => (
+      <option key={index} value={player._id}>
+        {player
+          .split(" ")
+          .map((word) => {
+            return word[0].toUpperCase() + word.substring(1);
+          })
+          .join(" ")}
+      </option>
+    ));
+
+    return out;
+  };
+
   const renderButtons = () => {
     if (markets.length) {
       return (
-        <div className="row">
-          <div className="col-1"></div>
-          <div className="col-8 form-group">
+        <div className="row m-4">
+          <div className="col-6 form-group">
             <select
-              className="form-control dropdown-toggle btn btn-warning btn-lg btn-block"
+              className="form-control dropdown-toggle btn-warning bg-warning-alt btn-lg btn-block text-white"
               placeholder="Match"
               onChange={SetRelevantMatch}
             >
-              <option className="text-center">Select a different match</option>
+              <option className="text-center text-white">
+                Select a different match
+              </option>
               {allMatches &&
                 allMatches.map((match, index) => (
                   <option key={index} value={match._id}>
@@ -145,23 +195,83 @@ const MatchMarkets = ({ match }) => {
                 ))}
             </select>
           </div>
-          <div className="col-2">
+          <div className="col-6">
             <button
-              className="btn btn-lg btn-info btn-block"
+              className="btn btn-lg  btn-warning bg-warning-alt btn-block text-white"
               onClick={toggleAmerican}
             >
-              {`View ${isAmerican ? "decimal" : "american"} odds`}
+              {`Switch to ${oddsPref ? "Decimal" : "American"}`}
             </button>
           </div>
-          <div className="col-1"></div>
         </div>
       );
     } else {
       return (
         <div>
-          <Link className="btn btn-lg bg-success btn-block text-white" to="/">
-            No markets available, return to home page
+          <Link
+            className="btn btn-lg bg-success-alt btn-block text-white"
+            to="/player-prop-arbitrage-betting-service"
+          >
+            No markets available, select a different match
           </Link>
+        </div>
+      );
+    }
+  };
+
+  const cardSnippet = (markets, thisPlayer, isUnder, oddsPref, index) => {
+    if (league === "NBA") {
+      return (
+        <div className="row">
+          <div key={index} className="col-1"></div>
+          <div key={index} className="col-10 mb-4">
+            <CardMarkets
+              market={markets}
+              player={thisPlayer}
+              isUnder={isUnder}
+              isAmerican={oddsPref}
+            />
+          </div>
+          <div key={index} className="col-1"></div>
+        </div>
+      );
+    } else if (league === "NHL") {
+      return (
+        <div key={index} className="col-6 mb-4">
+          <CardMarkets_NHL
+            market={markets}
+            player={thisPlayer}
+            isUnder={isUnder}
+            isAmerican={oddsPref}
+          />
+        </div>
+      );
+    } else if (league === "NFL") {
+      return (
+        <div className="row card-markets m-4">
+          <div key={index} className="col-12">
+            <CardMarkets_NFL
+              market={markets}
+              player={thisPlayer}
+              isUnder={isUnder}
+              isAmerican={oddsPref}
+            />
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="row">
+          <div key={index} className="col-1"></div>
+          <div key={index} className="col-10 mb-4">
+            <CardMarkets
+              market={markets}
+              player={thisPlayer}
+              isUnder={isUnder}
+              isAmerican={oddsPref}
+            />
+          </div>
+          <div key={index} className="col-1"></div>
         </div>
       );
     }
@@ -170,48 +280,39 @@ const MatchMarkets = ({ match }) => {
   return (
     <div>
       <Menu />
-      <div className="container-fluid">
-        <div className="bg-dark text-white text-center">
+      <div className="container-fluid m-auto">
+        <div className="bg-dark-alt text-white text-center">
           <div className="row">
-            <div className="col-1"></div>
-            <div className="col-2   align-right">
-              <LogoHelper teamId={awayTeam._id} />
+            <div className="col-3   align-right">
+              <LogoHelper team={awayTeam} />
             </div>
-            <div className="col-6 pt-5">
-              <h1>{`${awayTeam.name} @ ${homeTeam.name}`}</h1>
-              <p className="lead">
-                {new Date(date).toLocaleDateString("en-gb", {
+            <div className="col-6 pt-1">
+              <h1 className="matchPageHeader">{`${awayTeam.name} @ ${homeTeam.name}`}</h1>
+              <p className="lead date">
+                {convertUTCDateToLocalDate(date).toLocaleDateString("en-gb", {
                   year: "numeric",
                   month: "short",
                   day: "numeric",
-                  timeZone: "UTC",
                 })}
               </p>
             </div>
-            <div className="col-2   align-left">
-              <LogoHelper teamId={homeTeam._id} />
+            <div className="col-3   align-left">
+              <LogoHelper team={homeTeam} />
             </div>
-            <div className="col-1"></div>
           </div>
+          <br></br>
         </div>
         {renderButtons()}
-        <div className="row bg-dark text-white rounded">
+        <div className="row bg-dark-alt text-white rounded">
           {markets.length && (
             <div className="container-fluid">
               {uniquePlayers.map((thisPlayer, index) => {
-                return (
-                  <div className="row">
-                    <div className="col-1 mb-4"></div>
-                    <div key={index} className="col-10 mb-4">
-                      <CardMarkets
-                        market={markets}
-                        player={thisPlayer}
-                        isUnder={isUnder}
-                        isAmerican={isAmerican}
-                      />
-                    </div>
-                    <div className="col-1 mb-4"></div>
-                  </div>
+                return cardSnippet(
+                  markets,
+                  thisPlayer,
+                  isUnder,
+                  oddsPref,
+                  index
                 );
               })}
             </div>

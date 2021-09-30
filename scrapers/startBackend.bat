@@ -1,0 +1,1 @@
+cd "C:\Local Files\Javascript Projects\oddsComparisonSite\projbackend" && npm start

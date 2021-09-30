@@ -8,6 +8,7 @@ const {
   getAllMatches,
   createMatchFromScraper,
   deleteAllMatches,
+  deleteOldMatches,
 } = require("../controllers/match");
 const { isSignedIn, isAuthenticated, isAdmin } = require("../controllers/auth");
 const { getUserById } = require("../controllers/user");
@@ -39,5 +40,7 @@ router.get("/matches", getAllMatches);
 
 //delete route
 router.delete("/matches/delete", deleteAllMatches);
+
+router.delete("/matches/delete/old", deleteOldMatches);
 
 module.exports = router;

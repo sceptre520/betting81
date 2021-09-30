@@ -52,3 +52,17 @@ exports.deleteAllExternalMatches = (req, res) => {
     });
   });
 };
+
+exports.deleteExternalMatchesForOneSportsbook = (req, res) => {
+  const { sportsbook } = req.params;
+  ExternalMatch.deleteMany({ sportsbook: sportsbook }, (err) => {
+    if (err) {
+      return res.status(400).json({
+        error: "Failed to delete the ext. matches",
+      });
+    }
+    res.json({
+      message: "Deletion was a success",
+    });
+  });
+};

@@ -73,7 +73,7 @@ Promise.resolve(matchList)
 
         //   //const playerProps = scrapedOdds.markets;
 
-        let stats = ["Points", "Rebounds", "Assists"]; //I have no idea what is the naming convention
+        let stats = ["Points", "Rebounds", "Assists", "First Basket"]; //I have no idea what is the naming convention
 
         //   // //type:
         //   // //"Player Points O/U"
@@ -81,9 +81,12 @@ Promise.resolve(matchList)
 
         for (const stat of stats) {
           const playerMarkets = marketArray.filter((o) => {
-            return o.name.includes(`Player ${stat} O/U`); //I have no idea what is the naming convention. More probably .type is a unique identifier
+            if (stat === "First Basket") {
+              return o.name === "First Player to Score";
+            } else {
+              return o.name.includes(`Player ${stat} O/U`); //I have no idea what is the naming convention. More probably .type is a unique identifier
+            }
           });
-          //console.log(playerMarkets);
           if (playerMarkets) {
             const pointsMarkets = playerMarkets.filter((o) => {
               return (
@@ -110,13 +113,11 @@ Promise.resolve(matchList)
               const selectionId = selection.id;
               return { marketId, selectionName, selectionId };
             });
-
             const addEntrants = everyMarket.map((market) => {
               //   //find relevant entrants
               const entrantsForThisMarket = everyEntrant.filter((o) => {
                 return market.marketId === o.marketId;
               });
-
               if (entrantsForThisMarket) {
                 //console.log(entrantsForThisMarket);
                 const addEntrant = entrantsForThisMarket.map((entry) => {
@@ -136,37 +137,47 @@ Promise.resolve(matchList)
               }
             });
 
-            const Outcomes = addEntrants.map((o) => {
-              var oMarket = o.filter((o) => {
-                return o.selectionName === "Over";
-              })[0];
+            //console.log(addEntrants);
 
-              var uMarket = o.filter((o) => {
-                return o.selectionName === "Under";
-              })[0];
-
-              var handicap = oMarket
-                ? Number(oMarket.marketInfo.handicap)
-                : Number(uMarket.marketInfo.handicap);
-
-              var player = oMarket
-                ? oMarket.marketInfo.playerName
-                : uMarket.marketInfo.playerName;
-
-              myObject = {
-                player: player,
-                marketType: stat,
-                sportsbook: "Ladbrokes",
-                overPrice: Number(oMarket.price),
-                underPrice: uMarket ? Number(uMarket.price) : NaN,
-                handicap: handicap,
-                matchId: matchId,
-              };
-
-              return myObject;
-            });
-
-            writeMarketsToDB(Outcomes);
+            if (!(stat === "First Basket")) {
+              const Outcomes = addEntrants.map((o) => {
+                var oMarket = o.filter((o) => {
+                  return o.selectionName === "Over";
+                })[0];
+                var uMarket = o.filter((o) => {
+                  return o.selectionName === "Under";
+                })[0];
+                var handicap = oMarket
+                  ? Number(oMarket.marketInfo.handicap)
+                  : Number(uMarket.marketInfo.handicap);
+                var player = oMarket
+                  ? oMarket.marketInfo.playerName
+                  : uMarket.marketInfo.playerName;
+                var myObject = {
+                  player: player,
+                  marketType: stat,
+                  sportsbook: "Ladbrokes",
+                  overPrice: Number(oMarket.price),
+                  underPrice: uMarket ? Number(uMarket.price) : NaN,
+                  handicap: handicap,
+                  matchId: matchId,
+                };
+                return myObject;
+              });
+              writeMarketsToDB(Outcomes);
+            } else {
+              const FirstBaskets = addEntrants[0].map((o) => {
+                var myObject = {
+                  player: o.selectionName.split(" (")[0],
+                  marketType: stat,
+                  sportsbook: "Ladbrokes",
+                  overPrice: Number(o.price),
+                  matchId: matchId,
+                };
+                return myObject;
+              });
+              writeMarketsToDB(FirstBaskets);
+            }
           }
         }
       });

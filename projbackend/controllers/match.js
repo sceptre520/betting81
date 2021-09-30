@@ -121,3 +121,19 @@ exports.deleteAllMatches = (req, res) => {
     });
   });
 };
+
+exports.deleteOldMatches = (req, res) => {
+  var datestamp = new Date();
+  datestamp.setDate(datestamp.getDate() - 1);
+
+  Match.deleteMany({ date: { $lt: datestamp } }, (err) => {
+    if (err) {
+      return res.status(400).json({
+        error: "Failed to delete the old matches",
+      });
+    }
+    res.json({
+      message: "Deletion was a success",
+    });
+  });
+};

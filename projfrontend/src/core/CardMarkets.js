@@ -197,129 +197,6 @@ const CardMarkets = ({ market, player, isUnder, isAmerican }) => {
     "+"
   )}`;
 
-  // const odds = {
-  //   PB_Points: presentOdds(
-  //     getByValue(playerMarkets, "Points", "PointsBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   K_Points: presentOdds(
-  //     getByValue(playerMarkets, "Points", "Kambi"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   FB_Points: presentOdds(
-  //     getByValue(playerMarkets, "Points", "FoxBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   WH_Points: presentOdds(
-  //     getByValue(playerMarkets, "Points", "William Hill"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   SB_Points: presentOdds(
-  //     getByValue(playerMarkets, "Points", "SportsBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   TAB_Points: presentOdds(
-  //     getByValue(playerMarkets, "Points", "TAB"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   PB_Rebs: presentOdds(
-  //     getByValue(playerMarkets, "Rebounds", "PointsBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   K_Rebs: presentOdds(
-  //     getByValue(playerMarkets, "Rebounds", "Kambi"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   FB_Rebs: presentOdds(
-  //     getByValue(playerMarkets, "Rebounds", "FoxBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   WH_Rebs: presentOdds(
-  //     getByValue(playerMarkets, "Rebounds", "William Hill"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   SB_Rebs: presentOdds(
-  //     getByValue(playerMarkets, "Rebounds", "SportsBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   TAB_Rebs: presentOdds(
-  //     getByValue(playerMarkets, "Rebounds", "TAB"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   PB_Ass: presentOdds(
-  //     getByValue(playerMarkets, "Assists", "PointsBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   K_Ass: presentOdds(
-  //     getByValue(playerMarkets, "Assists", "Kambi"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   FB_Ass: presentOdds(
-  //     getByValue(playerMarkets, "Assists", "FoxBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   WH_Ass: presentOdds(
-  //     getByValue(playerMarkets, "Assists", "William Hill"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   SB_Ass: presentOdds(
-  //     getByValue(playerMarkets, "Assists", "SportsBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   TAB_Ass: presentOdds(
-  //     getByValue(playerMarkets, "Assists", "TAB"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   PB_FB: presentOdds(
-  //     getByValue(playerMarkets, "First Basket", "PointsBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   K_FB: presentOdds(
-  //     getByValue(playerMarkets, "First Field Goal", "Kambi"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   FB_FB: presentOdds(
-  //     getByValue(playerMarkets, "First Field Goal", "FoxBet"), //check naming convention
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   WH_FB: presentOdds(
-  //     getByValue(playerMarkets, "First Field Goal", "William Hill"), //check naming convention
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   SB_FB: presentOdds(
-  //     getByValue(playerMarkets, "First Field Goal", "SportsBet"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  //   TAB_FB: presentOdds(
-  //     getByValue(playerMarkets, "First Field Goal", "TAB"),
-  //     isUnder,
-  //     isAmerican
-  //   ),
-  // };
-
   const identifyTopBook = (playerMarkets, stat, isUnder) => {
     const PointsBetMarket = getByValue(playerMarkets, stat, "PointsBet")[0];
     const KambiMarket = getByValue(
@@ -437,7 +314,10 @@ const CardMarkets = ({ market, player, isUnder, isAmerican }) => {
       }
     }
 
-    return topBook;
+    return {
+      book: topBook,
+      market: topMarket,
+    };
   };
 
   const highlighting = {
@@ -459,36 +339,13 @@ const CardMarkets = ({ market, player, isUnder, isAmerican }) => {
     },
   };
 
-  // const classOfCell = {
-  //   PB_Points: highlighting.Points === "PointsBet" ? "mark " : "",
-  //   K_Points: highlighting.Points === "Kambi" ? "mark" : "",
-  //   FB_Points: highlighting.Points === "FoxBet" ? "mark" : "",
-  //   WH_Points: highlighting.Points === "William Hill" ? "mark" : "",
-  //   SB_Points: highlighting.Points === "SportsBet" ? "mark" : "",
-  //   TAB_Points: highlighting.Points === "TAB" ? "mark" : "",
-  //   PB_Rebs: highlighting.Rebounds === "PointsBet" ? "mark" : "",
-  //   K_Rebs: highlighting.Rebounds === "Kambi" ? "mark" : "",
-  //   FB_Rebs: highlighting.Rebounds === "FoxBet" ? "mark" : "",
-  //   WH_Rebs: highlighting.Rebounds === "William Hill" ? "mark" : "",
-  //   SB_Rebs: highlighting.Rebounds === "SportsBet" ? "mark" : "",
-  //   TAB_Rebs: highlighting.Rebounds === "TAB" ? "mark" : "",
-  //   PB_Ass: highlighting.Assists === "PointsBet" ? "mark" : "",
-  //   K_Ass: highlighting.Assists === "Kambi" ? "mark" : "",
-  //   FB_Ass: highlighting.Assists === "FoxBet" ? "mark" : "",
-  //   WH_Ass: highlighting.Assists === "William Hill" ? "mark" : "",
-  //   SB_Ass: highlighting.Assists === "SportsBet" ? "mark" : "",
-  //   TAB_Ass: highlighting.Assists === "TAB" ? "mark" : "",
-  //   PB_FB: highlighting.FirstBasket === "PointsBet" ? "mark" : "",
-  //   K_FB: highlighting.FirstBasket === "Kambi" ? "mark" : "",
-  //   FB_FB: highlighting.FirstBasket === "FoxBet" ? "mark" : "",
-  //   WH_FB: highlighting.FirstBasket === "William Hill" ? "mark" : "",
-  //   SB_FB: highlighting.FirstBasket === "SportsBet" ? "mark" : "",
-  //   TAB_FB: highlighting.FirstBasket === "TAB" ? "mark" : "",
-  // };
-
   const defineClassOfCell = (stat, sportsbook, overunder) => {
     if (highlighting[stat]) {
-      return highlighting[stat][overunder] === sportsbook ? "mark " : "";
+      return highlighting[stat][overunder].book === sportsbook
+        ? BP[stat] < 100
+          ? "markgreen"
+          : "infoBorder"
+        : "";
     } else {
       return "";
     }
@@ -526,6 +383,60 @@ const CardMarkets = ({ market, player, isUnder, isAmerican }) => {
         {grabPriceWrapper(AltStat, sportsbook, isUnder, isAmerican)}
       </td>
     );
+  };
+
+  const defineEffectiveBP = (stat) => {
+    if (highlighting[stat]) {
+      if (
+        highlighting[stat]["Over"].market &&
+        highlighting[stat]["Under"].market
+      ) {
+        let handicapDiff =
+          (highlighting[stat]["Over"].market.handicap
+            ? highlighting[stat]["Over"].market.handicap
+            : 0) -
+          (highlighting[stat]["Under"].market.handicap
+            ? highlighting[stat]["Under"].market.handicap
+            : 0);
+
+        if (handicapDiff === 0) {
+          let oPrice = Number(highlighting[stat]["Over"].market.overPrice);
+          let uPrice = Number(highlighting[stat]["Under"].market.underPrice);
+          return `${Number(100 / oPrice + 100 / uPrice).toFixed(1)}%`;
+        } else {
+          return "?";
+        }
+      }
+    } else {
+      return "?";
+    }
+  };
+
+  const BP = {
+    Points: defineEffectiveBP("Points")
+      ? Number(defineEffectiveBP("Points").replace("%", ""))
+      : "",
+    Rebounds: defineEffectiveBP("Rebounds")
+      ? Number(defineEffectiveBP("Rebounds").replace("%", ""))
+      : "",
+    Assists: defineEffectiveBP("Assists")
+      ? Number(defineEffectiveBP("Assists").replace("%", ""))
+      : "",
+  };
+
+  const classOfBP = {
+    Points:
+      BP.Points < 100
+        ? "font-weight-bold text-success"
+        : "font-weight-light font-italic",
+    Rebounds:
+      BP.Rebounds < 100
+        ? "font-weight-bold text-success"
+        : "font-weight-light font-italic",
+    Assists:
+      BP.Assists < 100
+        ? "font-weight-bold text-success"
+        : "font-weight-light font-italic",
   };
 
   const bookNames = [
@@ -594,11 +505,16 @@ const CardMarkets = ({ market, player, isUnder, isAmerican }) => {
             <tr>
               <td className="font-weight-bold align-middle">
                 <p>Points</p>
-                <p className="font-weight-light font-italic">Over</p>
-                <p className="font-weight-light font-italic">Under</p>
+                <p className={classOfBP.Points}>
+                  {defineEffectiveBP("Points")}
+                </p>
               </td>
-              <td className="font-weight-light font-italic">
-                {playerStats ? Number(playerStats.pts).toFixed(1) : "?"}
+              <td className="font-weight-bold align-middle">
+                <p className="font-weight-light font-italic">
+                  {playerStats ? Number(playerStats.pts).toFixed(1) : "?"}
+                </p>
+                <p>Over</p>
+                <p>Under</p>
               </td>
               {bookNames.map((book) => {
                 return populateThreeRowSnippet("Points", book, isAmerican);
@@ -608,11 +524,16 @@ const CardMarkets = ({ market, player, isUnder, isAmerican }) => {
             <tr>
               <td className="font-weight-bold align-middle">
                 <p>Rebounds</p>
-                <p className="font-weight-light font-italic">Over</p>
-                <p className="font-weight-light font-italic">Under</p>
+                <p className={classOfBP.Rebounds}>
+                  {defineEffectiveBP("Rebounds")}
+                </p>
               </td>
-              <td className="font-weight-light font-italic">
-                {playerStats ? Number(playerStats.reb).toFixed(1) : "?"}
+              <td className="font-weight-bold align-middle">
+                <p className="font-weight-light font-italic">
+                  {playerStats ? Number(playerStats.reb).toFixed(1) : "?"}
+                </p>
+                <p>Over</p>
+                <p>Under</p>
               </td>
               {bookNames.map((book) => {
                 return populateThreeRowSnippet("Rebounds", book, isAmerican);
@@ -622,11 +543,16 @@ const CardMarkets = ({ market, player, isUnder, isAmerican }) => {
             <tr>
               <td className="font-weight-bold align-middle">
                 <p>Assists</p>
-                <p className="font-weight-light font-italic">Over</p>
-                <p className="font-weight-light font-italic">Under</p>
+                <p className={classOfBP.Assists}>
+                  {defineEffectiveBP("Assists")}
+                </p>
               </td>
-              <td className="font-weight-light font-italic">
-                {playerStats ? Number(playerStats.ast).toFixed(1) : "?"}
+              <td className="font-weight-bold align-middle">
+                <p className="font-weight-light font-italic">
+                  {playerStats ? Number(playerStats.ast).toFixed(1) : "?"}
+                </p>
+                <p>Over</p>
+                <p>Under</p>
               </td>
               {bookNames.map((book) => {
                 return populateThreeRowSnippet("Assists", book, isAmerican);

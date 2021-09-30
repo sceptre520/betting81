@@ -115,16 +115,16 @@ const Signup = () => {
   return (
     <Base
       title="Create An Account"
-      description="Only signed in users can view odds"
+      description="Registered users can apply odds preferences, unlock additional content and receive updates about the service"
     >
       {successMessage()}
       {errorMessage()}
-      {signUpForm()}
       <p className="text-white text-center font-italic font-weight-light">
         <Link to="/signin" className="text-center text-warning">
           If you have an account already, click here to sign in.
         </Link>
       </p>
+      {signUpForm()}
     </Base>
   );
 };

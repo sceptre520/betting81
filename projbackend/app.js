@@ -19,6 +19,7 @@ const matchRoutes = require("./routes/match");
 const externalMatchRoutes = require("./routes/externalMatch.js");
 const marketRoutes = require("./routes/market");
 const playerRoutes = require("./routes/player");
+const arbRoutes = require("./routes/arb");
 
 //DB Connection
 mongoose
@@ -48,6 +49,7 @@ app.use("/api", matchRoutes);
 app.use("/api", marketRoutes);
 app.use("/api", externalMatchRoutes);
 app.use("/api", playerRoutes);
+app.use("/api", arbRoutes);
 
 //PORT
 const port = process.env.PORT || 8000;
