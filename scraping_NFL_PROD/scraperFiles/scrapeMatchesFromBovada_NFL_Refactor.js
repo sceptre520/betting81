@@ -1,3 +1,4 @@
+const { resolveInclude } = require("ejs");
 const fetch = require("node-fetch");
 
 var {
@@ -42,62 +43,89 @@ const grabRelevantMatchFields = (matchObject) => {
 // ////////////////////////////////////////////////////////////////////////////////
 
 exports.scrapeBovadaMatches = async () => {
-  return deleteOneSportsbookExtMatchesFromDB("Bovada").then(() => {
-    const FBMatches = scrapeData(FB_comp_URL)
-      .then((output) => {
-        //const events = output.eventGroup.events;
+  const a = await deleteOneSportsbookExtMatchesFromDB("Bovada");
 
-        const events = output[0].events;
+  const b = await scrapeData(FB_comp_URL);
 
-        //console.log(events);
-        if (events) {
-          //filter prematch only
-          const filteredEvents = events.filter((o) => {
-            return o.type === "GAMEEVENT" && !o.live;
-          });
-          //console.log(filteredEvents);
-          return filteredEvents;
-        }
-      })
-      .then((data) => {
-        return data.map((o) => {
-          return grabRelevantMatchFields(o);
-        });
+  const events = b[0].events;
+
+  //filter prematch only
+  const filteredEvents = events.filter((o) => {
+    return o.type === "GAMEEVENT" && !o.live;
+  });
+  //console.log(filteredEvents);
+  const FBMatches = filteredEvents.map((o) => {
+    return grabRelevantMatchFields(o);
+  });
+
+  // console.log(FBMatches);
+  //Executes the steps//
+
+  const matchList = await queryForAllMatches();
+
+  //   //Grab the matchId from my DB that corresponds to each DK EventID
+  var FBEventMapping = await FBMatches;
+
+  const thisFunct = (FBEventMapping, matchList) => {
+    var FBEventMapping2 = FBEventMapping;
+    let thisFBEvent;
+    for (let i = 0; i < FBEventMapping.length; i++) {
+      thisFBEvent = FBEventMapping2[i];
+
+      let matchFromDB = matchList.filter((o) => {
+        return o.name === thisFBEvent.name;
       });
 
-    //Executes the steps//
-
-    const matchList = queryForAllMatches().then((matches) => {
-      //console.log(teams);
-      return matches;
-    });
-
-    return Promise.all([FBMatches, matchList]).then((values) => {
-      let FBMatches = values[0];
-      let matchList = values[1];
-
-      //Grab the matchId from my DB that corresponds to each DK EventID
-      var FBEventMapping = FBMatches;
-      for (let i = 0; i < FBEventMapping.length; i++) {
-        thisFBEvent = FBEventMapping[i];
-
-        let matchFromDB = matchList.filter((o) => {
-          return o.name === thisFBEvent.name;
-        });
-
-        if (matchFromDB[0]) {
-          FBEventMapping[i]["matchId"] = matchFromDB[0]._id;
-        } else {
-          FBEventMapping[i]["matchId"] = "";
-        }
-
-        FBEventMapping[i]["sportsbook"] = "Bovada";
+      if (matchFromDB[0]) {
+        FBEventMapping2[i]["matchId"] = matchFromDB[0]._id;
+      } else {
+        FBEventMapping2[i]["matchId"] = "";
       }
 
-      FBEventMapping.map((FBEvent) => {
-        //console.log(FBEvent);
-        createExternalMatchInDB(FBEvent);
-      });
+      FBEventMapping2[i]["sportsbook"] = "Bovada";
+    }
+    return FBEventMapping2;
+  };
+
+  var FBEventMapping2 = await thisFunct(FBEventMapping, matchList);
+
+  const mapLoop = async () => {
+    //console.log("Start");
+
+    const promises = FBEventMapping2.map(async (thisFBEvent) => {
+      //const numFruit = await sleep(thisFBEvent);
+      const numFruit = await createExternalMatchInDB(thisFBEvent);
+      return numFruit;
     });
-  });
+
+    const numFruits = await Promise.all(promises);
+    //console.log(numFruits);
+
+    //console.log("End");
+  };
+
+  const Z = await mapLoop();
+  // const thisFunct2 = async (FBEventMapping2) => {
+  //   //let something = [];
+  //   //let thisFBEvent;
+  //   for (let i = 0; i < FBEventMapping2.length; i++) {
+  //     const thisFBEvent = FBEventMapping2[i];
+
+  //     const hello = await createExternalMatchInDB(thisFBEvent);
+  //     await hello;
+  //     console.log(hello);
+  //   }
+  //   //return something;
+  // };
+
+  // // myFunct2 = async (FBEventMapping2) => {
+  // //   await FBEventMapping2.map(async (FBEvent) => {
+  // //     //     //console.log(FBEvent);
+  // //     await createExternalMatchInDB(FBEvent);
+  // //   });
+  // // };
+  // return thisFunct2(FBEventMapping2);
+  // var X = await ;
+
+  return Z;
 };

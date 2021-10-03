@@ -24,7 +24,7 @@ const matchesRivers = require("./scraperFiles/scrapeMatchesFromRivers_NFL_Refact
 const marketsRivers = require("./scraperFiles/scrapeMarketsFromRivers_NFL_Refactor");
 
 const matchesSportsBetting = require("./scraperFiles/scrapeMatchesFromSportsBetting_NFL_Refactor");
-const marketsSportsBetting = require("./scraperFiles/scrapeMarketsFromSportsbetting_NFL_Refactor");
+const marketsSportsBetting = require("./scraperFiles/scrapeMarketsFromSportsBetting_NFL_Refactor");
 
 const matchesWH = require("./scraperFiles/scrapeMatchesFromWH_NFL_Refactor");
 const marketsWH = require("./scraperFiles/scrapeMarketsFromWH_NFL_Refactor");
@@ -35,86 +35,93 @@ const ArbIdentification = require("./scraperFiles/arbIdentification_Refactor");
 var pipeline = [null, null, null];
 var cron_cnt = 0;
 var start_time = getNow();
+var run = async () => {
+  //A
+  try {
+    console.log("Starting: PB Matches");
+    var PBMatches = await matchesPB.scrapePBMatches();
+    //console.log(PBMatches)
+    console.log("Successful: PB Matches");
+  } catch (error) {
+    console.log("Failed: PB Matches");
+  }
+
+  //B
+  try {
+    console.log("Starting: PB Markets");
+    var PBMarkets = await marketsPB.scrapePBMarkets();
+    //console.log(PBMarkets)
+    console.log("Successful: PB Markets");
+  } catch (error) {
+    console.log("Failed: PB Markets");
+  }
+
+  //C
+  try {
+    console.log("Starting: Other Matches");
+    var [
+      BovadaMatches,
+      DKMatches,
+      FBMatches,
+      RiversMatches,
+      SportsBettingMatches,
+      WHMatches,
+    ] = await Promise.all([
+      matchesBovada.scrapeBovadaMatches(),
+      matchesDK.scrapeDKMatches(),
+      matchesFB.scrapeFBMatches(),
+      matchesRivers.scrapeRiversMatches(),
+      matchesSportsBetting.scrapeSportsBettingMatches(),
+      matchesWH.scrapeWHMatches(),
+    ]);
+    //console.log(BovadaMatches, DKMatches, FBMatches,RiversMatches,SportsBettingMatches,WHMatches)
+    console.log("Successful: Other Matches");
+  } catch (error) {
+    console.log("Failed: Other Matches");
+  }
+
+  //D
+  try {
+    console.log("Starting: Other Markets");
+    var [
+      BovadaMarkets,
+      DKMarkets,
+      FBMarkets,
+      RiversMarkets,
+      SportsBettingMarkets,
+      WHMarkets,
+    ] = await Promise.all([
+      marketsBovada.scrapeBovadaMarkets(),
+      marketsDK.scrapeDKMarkets(),
+      marketsFB.scrapeFBMarkets(),
+      marketsRivers.scrapeRiversMarkets(),
+      marketsSportsBetting.scrapeSportsBettingMarkets(),
+      marketsWH.scrapeWHMarkets(),
+    ]);
+    //console.log(BovadaMarkets, DKMarkets, FBMarkets,RiversMarkets,SportsBettingMarkets,WHMarkets)
+    console.log("Successful: Other Markets");
+  } catch (error) {
+    console.log("Failed: Other Markets");
+  }
+
+  //E
+  try {
+    console.log("Starting: Arbs");
+    var Arbs = await ArbIdentification.identifyArbs();
+    //console.log(Arbs)
+    console.log("Successful: Arbs");
+  } catch (error) {
+    console.log("Failed: Arbs");
+  }
+};
 
 console.log("                                             ");
 console.log("--------    started  scheduler    -----------");
-
-var run = async() => {
-  tmp = {};
-
-  ////////////////////////////////////////////////////
-  //This First
-  try {
-    var res_matchesPB = await matchesPB.scrapePBMatches()
-    tmp.matchesPB = { run_time: getNow(), log: res_matchesPB };
-  } catch (error) {}
-
-  ////////////////////////////////////////////////////
-  //Then all these
-  try {
-      var [res_matchesBovada, res_matchesDK, res_matchesFB, res_matchesRivers, res_matchesSportsBetting, res_matchesWH] = await Promise.all([
-                                        matchesBovada.scrapeBovadaMatches(),
-                                        matchesDK.scrapeDKMatches(),
-                                        matchesFB.scrapeFBMatches(),
-                                        matchesRivers.scrapeRiversMatches(),
-                                        matchesSportsBetting.scrapeSportsBettingMatches(),
-                                        matchesWH.scrapeWHMatches()
-                                      ]);
-      tmp.matchesBovada = { run_time: getNow(), log: res_matchesBovada };
-      tmp.matchesDK = { run_time: getNow(), log: res_matchesDK };
-      tmp.matchesFB = { run_time: getNow(), log: res_matchesFB };
-      tmp.matchesRivers = { run_time: getNow(), log: res_matchesRivers };
-      tmp.matchesSportsBetting = { run_time: getNow(), log: res_matchesSportsBetting };
-      tmp.matchesWH = { run_time: getNow(), log: res_matchesWH };
-  }
-  catch (error) {}
-
-  ////////////////////////////////////////////////////
-  //Then all these
-  try {
-    var [res_marketsPB, res_marketsBovada, res_marketsDK, res_marketsFB, res_marketsRivers, res_marketsSportsBetting, res_marketsWH] = await Promise.all([
-                                      marketsPB.scrapePBMarkets(),
-                                      marketsBovada.scrapeBovadaMarkets(),
-                                      marketsDK.scrapeDKMarkets(),
-                                      marketsFB.scrapeFBMarkets(),
-                                      marketsRivers.scrapeRiversMarkets(),
-                                      marketsSportsBetting.scrapeSportsBettingMarkets(),
-                                      marketsWH.scrapeWHMarkets()
-                                    ]);
-    tmp.marketsPB = { run_time: getNow(), log: res_marketsPB };
-    tmp.marketsBovada = { run_time: getNow(), log: res_marketsBovada };
-    tmp.marketsDK = { run_time: getNow(), log: res_marketsDK };
-    tmp.marketsFB = { run_time: getNow(), log: res_marketsFB };
-    tmp.marketsRivers = { run_time: getNow(), log: res_marketsRivers };
-    tmp.marketsSportsBetting = { run_time: getNow(), log: res_marketsSportsBetting };
-    tmp.marketsWH = { run_time: getNow(), log: res_marketsWH };
-  }
-  catch (error) {}
-
-  ////////////////////////////////////////////////////
-  //Then finally this
-  try {
-    var [res_arbs] = await Promise.all([
-                                      ArbIdentification.identifyArbs()
-                                    ]);
-    tmp.arbs = { run_time: getNow(), log: res_arbs };
-  }
-  catch (error) {}
-
-  for (i = 0; i < 2; i++) {
-    pipeline[i] = pipeline[i + 1];
-  }
-  pipeline[2] = tmp;
-
-  cron_cnt++;
-}
-
-run()
-
 cron.schedule("0 */15 * * * *", function () {
   console.log(" ---  running a task every 15 minutes --- ");
-  
-  run()
+
+  run();
+  cron_cnt++;
 });
 
 const port = process.env.PORT || 8100;

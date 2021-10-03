@@ -53,61 +53,64 @@ const grabRelevantMatchFields = (matchObject) => {
 
 ////////////////////////////////////////////////////////////////////////////////
 exports.scrapeSportsBettingMatches = async () => {
-  return deleteOneSportsbookExtMatchesFromDB("MaximBet").then(() => {
-    const DKMatches = scrapeData(DK_comp_URL)
-      .then((output) => {
-        const events = output.events;
-        //console.log(events);
-        if (events) {
-          return events.filter((o) => {
-            return (
-              o.active &&
-              o.timeSettings.timeline === "Prematch" &&
-              o.eventType === "two-participants-event"
-            ); //avoids futures etc.
-          });
-        }
+  const a = await deleteOneSportsbookExtMatchesFromDB("MaximBet");
+  const b = await scrapeData(DK_comp_URL);
+
+  const events = b.events;
+  //console.log(events);
+  if (events) {
+    const DKMatches = events
+      .filter((o) => {
+        return (
+          o.active &&
+          o.timeSettings.timeline === "Prematch" &&
+          o.eventType === "two-participants-event"
+        ); //avoids futures etc.
       })
-      .then((data) => {
-        return data.map((o) => {
-          //console.log(o);
-          return grabRelevantMatchFields(o);
-        });
+      .map((o) => {
+        //console.log(o);
+        return grabRelevantMatchFields(o);
       });
 
     //Executes the steps//
 
-    const matchList = queryForAllMatches().then((matches) => {
-      //console.log(teams);
-      return matches;
-    });
+    const matchList = await queryForAllMatches();
 
-    return Promise.all([DKMatches, matchList]).then((values) => {
-      let DKMatches = values[0];
-      let matchList = values[1];
+    //Grab the matchId from my DB that corresponds to each DK EventID
+    var DKEventMapping = DKMatches;
+    for (let i = 0; i < DKEventMapping.length; i++) {
+      thisDKEvent = DKEventMapping[i];
+      //console.log(matchList);
+      let matchFromDB = matchList.filter((o) => {
+        return o.name === thisDKEvent.name;
+      });
 
-      //Grab the matchId from my DB that corresponds to each DK EventID
-      var DKEventMapping = DKMatches;
-      for (let i = 0; i < DKEventMapping.length; i++) {
-        thisDKEvent = DKEventMapping[i];
-        //console.log(matchList);
-        let matchFromDB = matchList.filter((o) => {
-          return o.name === thisDKEvent.name;
-        });
-
-        if (matchFromDB[0]) {
-          DKEventMapping[i]["matchId"] = matchFromDB[0]._id;
-        } else {
-          DKEventMapping[i]["matchId"] = "";
-        }
-
-        DKEventMapping[i]["sportsbook"] = "MaximBet";
+      if (matchFromDB[0]) {
+        DKEventMapping[i]["matchId"] = matchFromDB[0]._id;
+      } else {
+        DKEventMapping[i]["matchId"] = "";
       }
 
-      DKEventMapping.map((DKEvent) => {
-        //console.log(DKEvent);
-        createExternalMatchInDB(DKEvent);
+      DKEventMapping[i]["sportsbook"] = "MaximBet";
+    }
+
+    const mapLoop = async (DKEventMapping) => {
+      // console.log("Start");
+
+      const promises = DKEventMapping.map(async (DKEvent) => {
+        //const numFruit = await sleep(thisFBEvent);
+        const numFruit = await createExternalMatchInDB(DKEvent);
+        return numFruit;
       });
-    });
-  });
+
+      const numFruits = await Promise.all(promises);
+      // console.log(numFruits);
+
+      // console.log("End");
+    };
+
+    const Z = await mapLoop(DKEventMapping);
+
+    return Z;
+  }
 };

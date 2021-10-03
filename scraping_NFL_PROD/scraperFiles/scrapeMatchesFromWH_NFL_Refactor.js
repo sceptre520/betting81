@@ -51,61 +51,60 @@ const grabRelevantMatchFields = (matchObject) => {
 
 ////////////////////////////////////////////////////////////////////////////////
 exports.scrapeWHMatches = async () => {
-  return deleteOneSportsbookExtMatchesFromDB("William Hill").then(() => {
-    const WHMatches = scrapeData(WH_sport_URL)
-      .then((output) => {
-        //const events = output.eventGroup.events;
+  const a = await deleteOneSportsbookExtMatchesFromDB("William Hill");
+  const b = await scrapeData(WH_sport_URL);
+  const events = b.competitions.filter((o) => {
+    return o.name === "NFL";
+  })[0];
+  if (events) {
+    //filter prematch only and not futures etc.
+    const filteredEvents = events.events.filter((o) => {
+      return o.display && o.active && !o.started && o.type === "MATCH";
+    });
 
-        const events = output.competitions.filter((o) => {
-          return o.name === "NFL";
-        })[0];
-
-        //filter prematch only and not futures etc.
-        const filteredEvents = events.events.filter((o) => {
-          return o.display && o.active && !o.started && o.type === "MATCH";
-        });
-
-        return filteredEvents;
-      })
-      .then((data) => {
-        console.log(data);
-        return data.map((o) => {
-          return grabRelevantMatchFields(o);
-        });
-      });
+    const WHMatches = filteredEvents.map((o) => {
+      return grabRelevantMatchFields(o);
+    });
 
     // //Executes the steps//
 
-    const matchList = queryForAllMatches().then((matches) => {
-      //console.log(teams);
-      return matches;
-    });
+    const matchList = await queryForAllMatches();
 
-    return Promise.all([WHMatches, matchList]).then((values) => {
-      let WHMatches = values[0];
-      let matchList = values[1];
+    //Grab the matchId from my DB that corresponds to each DK EventID
+    var WHEventMapping = WHMatches;
+    for (let i = 0; i < WHEventMapping.length; i++) {
+      thisWHEvent = WHEventMapping[i];
 
-      //Grab the matchId from my DB that corresponds to each DK EventID
-      var WHEventMapping = WHMatches;
-      for (let i = 0; i < WHEventMapping.length; i++) {
-        thisWHEvent = WHEventMapping[i];
-
-        let matchFromDB = matchList.filter((o) => {
-          return o.name === thisWHEvent.name.replace(" at ", " @ "); // WH does [away at home], not like PB's [away @ home].
-        });
-
-        if (matchFromDB[0]) {
-          WHEventMapping[i]["matchId"] = matchFromDB[0]._id;
-        } else {
-          WHEventMapping[i]["matchId"] = "";
-        }
-
-        WHEventMapping[i]["sportsbook"] = "William Hill";
-      }
-      WHEventMapping.map((WHEvent) => {
-        //console.log(WHEvent)
-        createExternalMatchInDB(WHEvent);
+      let matchFromDB = matchList.filter((o) => {
+        return o.name === thisWHEvent.name.replace(" at ", " @ "); // WH does [away at home], not like PB's [away @ home].
       });
-    });
-  });
+
+      if (matchFromDB[0]) {
+        WHEventMapping[i]["matchId"] = matchFromDB[0]._id;
+      } else {
+        WHEventMapping[i]["matchId"] = "";
+      }
+
+      WHEventMapping[i]["sportsbook"] = "William Hill";
+    }
+
+    const mapLoop = async (DKEventMapping) => {
+      // console.log("Start");
+
+      const promises = DKEventMapping.map(async (DKEvent) => {
+        //const numFruit = await sleep(thisFBEvent);
+        const numFruit = await createExternalMatchInDB(DKEvent);
+        return numFruit;
+      });
+
+      const numFruits = await Promise.all(promises);
+      // console.log(numFruits);
+
+      // console.log("End");
+    };
+
+    const Z = await mapLoop(WHEventMapping);
+
+    return Z;
+  }
 };

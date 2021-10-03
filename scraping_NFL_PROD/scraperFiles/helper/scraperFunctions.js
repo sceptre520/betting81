@@ -5,18 +5,21 @@ const fetch = require("node-fetch");
 //////////Fetch URL//////////
 
 exports.scrapeData = async (URL) => {
-  return fetch(URL, {
+  const var1 = await fetch(URL, {
     method: "GET",
   })
     .then((response) => {
       return response.json();
+      //return "ScrapedData";
     })
     .catch((err) => console.log("you fucked up"));
+
+  return var1;
 };
 
 //////////Deletion//////////
 
-exports.deleteMatchesFromDB = () => {
+exports.deleteMatchesFromDB = async () => {
   return fetch(`${APIurl}/matches/delete`, {
     method: "DELETE",
   })
@@ -28,7 +31,7 @@ exports.deleteMatchesFromDB = () => {
     });
 };
 
-exports.deleteExternalMatchesFromDB = () => {
+exports.deleteExternalMatchesFromDB = async () => {
   return fetch(`${APIurl}/externalmatches/delete`, {
     method: "DELETE",
   })
@@ -40,7 +43,7 @@ exports.deleteExternalMatchesFromDB = () => {
     });
 };
 
-exports.deleteMarketsFromDB = () => {
+exports.deleteMarketsFromDB = async () => {
   return fetch(`${APIurl}/markets/delete`, {
     method: "DELETE",
   })
@@ -52,8 +55,8 @@ exports.deleteMarketsFromDB = () => {
     });
 };
 
-exports.deleteOldMatchesFromDB = () => {
-  return fetch(`${APIurl}/matches/delete/old`, {
+exports.deleteOldMatchesFromDB = async () => {
+  await fetch(`${APIurl}/matches/delete/old`, {
     method: "DELETE",
   })
     .then((res) => {
@@ -64,7 +67,7 @@ exports.deleteOldMatchesFromDB = () => {
     });
 };
 
-exports.deleteOneSportsbookMarketsFromDB = (sportsbook) => {
+exports.deleteOneSportsbookMarketsFromDB = async (sportsbook) => {
   return fetch(`${APIurl}/markets/delete/${sportsbook}`, {
     method: "DELETE",
   })
@@ -76,8 +79,8 @@ exports.deleteOneSportsbookMarketsFromDB = (sportsbook) => {
     });
 };
 
-exports.deleteOneSportsbookExtMatchesFromDB = (sportsbook) => {
-  return fetch(`${APIurl}/externalmatches/delete/${sportsbook}`, {
+exports.deleteOneSportsbookExtMatchesFromDB = async (sportsbook) => {
+  await fetch(`${APIurl}/externalmatches/delete/${sportsbook}`, {
     method: "DELETE",
   })
     .then((res) => {
@@ -88,7 +91,7 @@ exports.deleteOneSportsbookExtMatchesFromDB = (sportsbook) => {
     });
 };
 
-exports.deleteArbsFromDB = () => {
+exports.deleteArbsFromDB = async () => {
   return fetch(`${APIurl}/arb/delete`, {
     method: "DELETE",
   })
@@ -102,35 +105,31 @@ exports.deleteArbsFromDB = () => {
 
 //////////Read from DB//////////
 
-exports.queryForAllTeams = () => {
+exports.queryForAllTeams = async () => {
   async function getAllTeamsInDB() {
     return fetch(`${APIurl}/teams`).then((teams) => {
       return teams.json();
     });
   }
 
-  let teamsList = getAllTeamsInDB().then((output) => {
-    return output;
-  });
+  let teamsList = await getAllTeamsInDB();
 
   return teamsList;
 };
 
-exports.queryForAllMatches = () => {
+exports.queryForAllMatches = async () => {
   async function getAllMatchesInDB() {
     return fetch(`${APIurl}/matches`).then((matches) => {
       return matches.json();
     });
   }
 
-  let matchList = getAllMatchesInDB().then((output) => {
-    return output;
-  });
+  let matchList = await getAllMatchesInDB();
 
   return matchList;
 };
 
-exports.queryForAllExternalMatches = () => {
+exports.queryForAllExternalMatches = async () => {
   async function getAllMatchesInDB() {
     return fetch(`${APIurl}/externalMatches`).then((matches) => {
       return matches.json();
@@ -144,7 +143,7 @@ exports.queryForAllExternalMatches = () => {
   return matchList;
 };
 
-exports.queryForAllMarkets = () => {
+exports.queryForAllMarkets = async () => {
   async function getAllMarketsInDB() {
     return fetch(`${APIurl}/markets`).then((matches) => {
       return matches.json();
@@ -158,7 +157,7 @@ exports.queryForAllMarkets = () => {
   return matchList;
 };
 
-exports.queryForAllArbs = () => {
+exports.queryForAllArbs = async () => {
   async function getAllArbsInDB() {
     return fetch(`${APIurl}/arb/all`).then((arbs) => {
       return arbs.json();
@@ -174,82 +173,97 @@ exports.queryForAllArbs = () => {
 
 //////////Write to DB//////////
 
-exports.createMatchInDB = (match) => {
-  fetch(`${APIurl}/scraper/match/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(match),
-  }).then((response, err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(response);
-      // console.log("Everything is great");
-    }
-  });
-};
-
-exports.createExternalMatchInDB = (match) => {
-  fetch(`${APIurl}/scraper/externalMatches/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(match),
-  }).then((response, err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(response);
-    }
-  });
-};
-
-exports.writeMarketsToDB = (Outcomes) => {
-  const createMarketInDB = (market) => {
-    fetch(`${APIurl}/scraper/market/create`, {
+exports.createMatchInDB = async (match) => {
+  async function creation() {
+    return fetch(`${APIurl}/scraper/match/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(market),
+      body: JSON.stringify(match),
     }).then((response, err) => {
       if (err) {
         console.log(err);
       } else {
-        console.log(response);
+        //console.log(response);
+        return match.name;
+        // console.log("Everything is great");
       }
     });
-  };
-
-  if (Array.isArray(Outcomes)) {
-    //console.log("I am array");
-    Outcomes.map((market) => {
-      createMarketInDB(market);
-    });
-  } else {
-    //console.log("I am not array");
-    createMarketInDB(Outcomes);
   }
+
+  let result = await creation();
+
+  return result;
 };
 
-exports.createArbInDB = (arb) => {
-  fetch(`${APIurl}/arb/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(arb),
-  }).then((response, err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(response);
-      // console.log("Everything is great");
-    }
-  });
+exports.createExternalMatchInDB = async (match) => {
+  async function creation() {
+    return fetch(`${APIurl}/scraper/externalMatches/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(match),
+    }).then((response, err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        //console.log(response);
+        return match.name;
+      }
+    });
+  }
+
+  let result = await creation();
+
+  return result;
+};
+
+exports.writeMarketsToDB = async (Outcomes) => {
+  async function creation() {
+    return fetch(`${APIurl}/scraper/market/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(Outcomes),
+    }).then((response, err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        //console.log(response);
+        return "saved";
+      }
+    });
+  }
+
+  let result = await creation();
+
+  return result;
+};
+
+exports.createArbInDB = async (arb) => {
+  async function creation() {
+    return fetch(`${APIurl}/arb/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(arb),
+    }).then((response, err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        //console.log(response);
+        return "Saved";
+      }
+    });
+  }
+
+  let result = await creation();
+
+  return result;
 };
 
 ////////////////POST TO SLACK///////////////////////

@@ -39,65 +39,64 @@ const grabRelevantMatchFields = (matchObject) => {
 
 ////////////////////////////////////////////////////////////////////////////////
 exports.scrapeFBMatches = async () => {
-  return deleteOneSportsbookExtMatchesFromDB("FoxBet").then(() => {
-    const FBMatches = scrapeData(FB_comp_URL)
-      .then((output) => {
-        //const events = output.eventGroup.events;
+  const a = await deleteOneSportsbookExtMatchesFromDB("FoxBet");
+  const scraperOut = await scrapeData(FB_comp_URL);
 
-        const events = output.event;
-        if (events) {
-          //filter prematch only
-          const filteredEvents = events.filter((o) => {
-            return o.displayed && !o.isInplay && !o.outright; //avoids futures etc.
-          });
-          return filteredEvents;
-        }
+  const events = scraperOut.event;
+  if (events) {
+    //filter prematch only
+    const FBMatches = events
+      .filter((o) => {
+        return o.displayed && !o.isInplay && !o.outright; //avoids futures etc.
       })
-      .then((data) => {
-        console.log(data);
-        return data.map((o) => {
-          return grabRelevantMatchFields(o);
-        });
+      .map((o) => {
+        return grabRelevantMatchFields(o);
       });
 
     //Executes the steps//
 
-    const matchList = queryForAllMatches().then((matches) => {
-      //console.log(teams);
-      return matches;
-    });
+    const matchList = await queryForAllMatches();
 
-    return Promise.all([FBMatches, matchList]).then((values) => {
-      let FBMatches = values[0];
-      let matchList = values[1];
+    //Grab the matchId from my DB that corresponds to each DK EventID
+    var FBEventMapping = FBMatches;
+    for (let i = 0; i < FBEventMapping.length; i++) {
+      thisFBEvent = FBEventMapping[i];
 
-      //Grab the matchId from my DB that corresponds to each DK EventID
-      var FBEventMapping = FBMatches;
-      for (let i = 0; i < FBEventMapping.length; i++) {
-        thisFBEvent = FBEventMapping[i];
+      let matchFromDB = matchList.filter((o) => {
+        return (
+          //FoxBet uses [home vs. away] convention, not [away @ home]
+          thisFBEvent.name.includes(o.awayTeam.name) &&
+          thisFBEvent.name.includes(o.homeTeam.name)
+        );
+        //return o.name === thisFBEvent.name; // this may be inadequate. Possibly use team names and/or date.
+      });
 
-        let matchFromDB = matchList.filter((o) => {
-          return (
-            //FoxBet uses [home vs. away] convention, not [away @ home]
-            thisFBEvent.name.includes(o.awayTeam.name) &&
-            thisFBEvent.name.includes(o.homeTeam.name)
-          );
-          //return o.name === thisFBEvent.name; // this may be inadequate. Possibly use team names and/or date.
-        });
-
-        if (matchFromDB[0]) {
-          FBEventMapping[i]["matchId"] = matchFromDB[0]._id;
-        } else {
-          FBEventMapping[i]["matchId"] = "";
-        }
-
-        FBEventMapping[i]["sportsbook"] = "FoxBet";
+      if (matchFromDB[0]) {
+        FBEventMapping[i]["matchId"] = matchFromDB[0]._id;
+      } else {
+        FBEventMapping[i]["matchId"] = "";
       }
 
-      FBEventMapping.map((FBEvent) => {
-        //console.log(FBEvent)
-        createExternalMatchInDB(FBEvent);
+      FBEventMapping[i]["sportsbook"] = "FoxBet";
+    }
+
+    const mapLoop = async (FBEventMapping) => {
+      // console.log("Start");
+
+      const promises = FBEventMapping.map(async (FBEvent) => {
+        //const numFruit = await sleep(thisFBEvent);
+        const numFruit = await createExternalMatchInDB(FBEvent);
+        return numFruit;
       });
-    });
-  });
+
+      const numFruits = await Promise.all(promises);
+      // console.log(numFruits);
+
+      // console.log("End");
+    };
+
+    const Z = await mapLoop(FBEventMapping);
+
+    return Z;
+  }
 };
