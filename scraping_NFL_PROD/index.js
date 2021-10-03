@@ -24,7 +24,7 @@ const matchesRivers = require("./scraperFiles/scrapeMatchesFromRivers_NFL_Refact
 const marketsRivers = require("./scraperFiles/scrapeMarketsFromRivers_NFL_Refactor");
 
 const matchesSportsBetting = require("./scraperFiles/scrapeMatchesFromSportsBetting_NFL_Refactor");
-const marketsSportsBetting = require("./scraperFiles/scrapeMarketsFromSportsBetting_NFL_Refactor");
+const marketsSportsBetting = require("./scraperFiles/scrapeMarketsFromSportsbetting_NFL_Refactor");
 
 const matchesWH = require("./scraperFiles/scrapeMatchesFromWH_NFL_Refactor");
 const marketsWH = require("./scraperFiles/scrapeMarketsFromWH_NFL_Refactor");
