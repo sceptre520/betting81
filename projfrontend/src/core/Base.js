@@ -22,7 +22,13 @@ const Base = ({
         <div className="container-fluid bg-dark-alt text-white text-center py-3"></div>
 
         <div className="container">
-          <span className="text-muted">All rights reserved</span>
+          <a href="mailto:propplayerinfo@gmail.com">
+            <span className="text-muted">Email: propplayerinfo@gmail.com</span>
+          </a>
+          <br></br>
+          <a href="https://twitter.com/playerpropodds">
+            <span className="text-muted">Twitter: @playerpropodds</span>
+          </a>
         </div>
       </footer>
     </div>

@@ -19,40 +19,42 @@ export default function Arbs() {
         if (data) {
           const Output = data.map((arb) => {
             if (arb.overMarketId && arb.underMarketId) {
-              let league = arb.overMarketId.matchId.league;
-              let matchName = arb.overMarketId.matchId.name;
-              let matchId = arb.overMarketId.matchId._id;
-              let player = arb.overMarketId.player;
-              let marketType = arb.overMarketId.marketType;
-              let Ohandicap = arb.overMarketId.handicap;
-              let Uhandicap = arb.underMarketId.handicap;
-              let overSportsbook = arb.overMarketId.sportsbook;
-              let overPrice = arb.overMarketId.overPrice;
+              if (arb.overMarketId.matchId) {
+                let league = arb.overMarketId.matchId.league;
+                let matchName = arb.overMarketId.matchId.name;
+                let matchId = arb.overMarketId.matchId._id;
+                let player = arb.overMarketId.player;
+                let marketType = arb.overMarketId.marketType;
+                let Ohandicap = arb.overMarketId.handicap;
+                let Uhandicap = arb.underMarketId.handicap;
+                let overSportsbook = arb.overMarketId.sportsbook;
+                let overPrice = arb.overMarketId.overPrice;
 
-              let underSportsbook = arb.underMarketId.sportsbook;
-              let underPrice = arb.underMarketId.underPrice;
+                let underSportsbook = arb.underMarketId.sportsbook;
+                let underPrice = arb.underMarketId.underPrice;
 
-              let overString = `Over $${overPrice.toFixed(
-                2
-              )} (${overSportsbook})`;
-              let underString = `Under $${underPrice.toFixed(
-                2
-              )} (${underSportsbook})`;
-              return {
-                arbId: arb._id,
-                ArbOrMiddle: arb.ArbOrMiddle,
-                matchPath: `/match/${matchId}`,
-                league: league,
-                matchName: matchName,
-                player: player,
-                marketType: marketType,
-                Ohandicap: Ohandicap,
-                Uhandicap: Uhandicap,
-                overString: overString,
-                underString: underString,
-                bookPerc: 1 / overPrice + 1 / underPrice,
-                middleSize: Uhandicap - Ohandicap,
-              };
+                let overString = `Over $${overPrice.toFixed(
+                  2
+                )} (${overSportsbook})`;
+                let underString = `Under $${underPrice.toFixed(
+                  2
+                )} (${underSportsbook})`;
+                return {
+                  arbId: arb._id,
+                  ArbOrMiddle: arb.ArbOrMiddle,
+                  matchPath: `/match/${matchId}`,
+                  league: league,
+                  matchName: matchName,
+                  player: player,
+                  marketType: marketType,
+                  Ohandicap: Ohandicap,
+                  Uhandicap: Uhandicap,
+                  overString: overString,
+                  underString: underString,
+                  bookPerc: 1 / overPrice + 1 / underPrice,
+                  middleSize: Uhandicap - Ohandicap,
+                };
+              }
             }
           });
 
@@ -203,7 +205,9 @@ export default function Arbs() {
                   to="/player-prop-arbitrage-betting-service"
                 >
                   <p className="HowTo">
-                    No arbs right now. Return to home page.
+                    No arbs right now. Check back soon. Scraper may be running.
+                    <br></br>
+                    Return to home page.
                   </p>
                 </Link>
               </button>
