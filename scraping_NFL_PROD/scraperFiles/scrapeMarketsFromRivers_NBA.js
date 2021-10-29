@@ -15,10 +15,10 @@ const APIurl = "http://localhost:8000/api";
 ////////////////////////////////////////////////////////////////////////////////
 
 exports.scrapeRiversMarkets = async () => {
-  const a = await deleteOneSportsbookMarketsFromDB("Rivers");
+  // const a = await deleteOneSportsbookMarketsFromDB("Rivers");
   let matchList = await queryForAllExternalMatches();
   matchList.filter((o) => {
-    return o.sportsbook === "Rivers" && o.league === "NFL";
+    return o.sportsbook === "Rivers" && o.league === "NBA";
   });
 
   ///////////////////////////////////////////////////////////////////////////////////////////
@@ -29,11 +29,19 @@ exports.scrapeRiversMarkets = async () => {
 
     const BVEventId = BVmatch.eventId; //matchList[0].eventId; //179725302;
 
-    const BV_Markets_URL = `https://eu-offering.kambicdn.org/offering/v2018/rsiusco/betoffer/event/${BVEventId}.json?lang=en_US&market=US-CO&includeParticipants=true`;
+    const BV_Markets_URL = `https://eu-offering.kambicdn.org/offering/v2018/rsiusco/betoffer/event/${BVEventId}.json?lang=en_US&market=US&includeParticipants=true`;
 
     const scrapedOdds = await scrapeData(BV_Markets_URL);
 
-    let stats = ["Passing", "Rushing", "Receiving", "FirstTD"];
+    let stats = [
+      "Points",
+      "Rebounds",
+      "Assists",
+      "PRA",
+      "Double Double",
+      "Triple Double",
+      "Threes",
+    ];
     for (const stat of stats) {
       var MarketOutputs = InsideEachMatchStat(scrapedOdds, matchId, stat);
       if (MarketOutputs) {
@@ -55,10 +63,8 @@ const mapLoop = async (MarketOutputs) => {
     const numFruit = await writeMarketsToDB(market);
     return numFruit;
   });
-
   const numFruits = await Promise.all(promises);
-  // console.log(numFruits);
-
+  console.log(numFruits);
   //console.log("End");
 };
 
@@ -67,14 +73,20 @@ const InsideEachMatchStat = (scrapedOdds, matchId, stat) => {
   if (scrapedOdds.betOffers) {
     const playerMarkets = scrapedOdds.betOffers.filter((o) => {
       let condition;
-      if (stat === "Passing") {
-        condition = "Total Passing Yards by the Player";
-      } else if (stat === "Rushing") {
-        condition = "Total Rushing Yards by the Player";
-      } else if (stat === "Receiving") {
-        condition = "Total Receiving Yards by the Player";
-      } else if (stat === "FirstTD") {
-        condition = "First Touchdown Scorer";
+      if (stat === "Points") {
+        condition = "Points scored by the player";
+      } else if (stat === "Rebounds") {
+        condition = "Rebounds by the player";
+      } else if (stat === "Assists") {
+        condition = "Assists by the player";
+      } else if (stat === "PRA") {
+        condition = "Points, rebounds & assists by the player";
+      } else if (stat === "Double Double") {
+        condition = "To record a double-double";
+      } else if (stat === "Triple Double") {
+        condition = "To record a triple-double";
+      } else if (stat === "Threes") {
+        condition = "3-point field goals made by the player";
       } else {
         condition = "No Idea";
       }
@@ -85,9 +97,15 @@ const InsideEachMatchStat = (scrapedOdds, matchId, stat) => {
       var OutcomesOuter = playerMarkets.map((o) => {
         if (o) {
           //console.log(o);
+          let playerNameOverride;
+          if (stat === "Double Double" || stat === "Triple Double") {
+            playerNameOverride = o.outcomes[0].participant;
+          }
           const OUTS = o.outcomes.map((selection) => {
             //console.log(selection);
-            let playerName = selection.participant;
+            let playerName = playerNameOverride
+              ? playerNameOverride
+              : selection.participant;
             if (playerName) {
               playerName = `${playerName.split(", ")[1]} ${
                 playerName.split(", ")[0]
@@ -99,9 +117,15 @@ const InsideEachMatchStat = (scrapedOdds, matchId, stat) => {
               if (selection.label === "Over") {
                 overPrice = selection.odds / 1000;
                 handicap = selection.line / 1000;
+              } else if (selection.label === "Yes") {
+                overPrice = selection.odds / 1000;
+                handicap = 0;
               } else if (selection.label === "Under") {
                 underPrice = selection.odds / 1000;
                 handicap = selection.line / 1000;
+              } else if (selection.label === "No") {
+                underPrice = selection.odds / 1000;
+                handicap = 0;
               } else {
                 overPrice = selection.odds / 1000;
               }
@@ -120,7 +144,7 @@ const InsideEachMatchStat = (scrapedOdds, matchId, stat) => {
             }
           });
 
-          //console.log(OUTS);
+          // console.log(OUTS);
 
           // loop over players and handicaps to see if there is an under to their over
 

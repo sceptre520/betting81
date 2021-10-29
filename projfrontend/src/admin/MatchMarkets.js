@@ -6,7 +6,7 @@ import { isAutheticated } from "../auth/helper/index";
 import Menu from "../core/Menu";
 import LogoHelper from "../core/helper/LogoHelper";
 import { getMarketsFromMatch } from "../core/helper/marketHelper";
-import CardMarkets from "../core/CardMarkets";
+import CardMarkets_NBA from "../core/CardMarkets_NBA";
 import CardMarkets_NHL from "../core/CardMarkets_NHL";
 import CardMarkets_NFL from "../core/CardMarkets_NFL";
 
@@ -20,6 +20,13 @@ const MatchMarkets = ({ match }) => {
   const [markets, setMarkets] = useState([]);
   const [allMatches, setallMatches] = useState([]);
   const [oddsPref, setOddsPref] = useState([]);
+
+  const [selectedMarketType, setSelectedMarketType] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState([]);
+
+  const [filteredMarkets, setFilteredMarkets] = useState([]);
+  const [uniquePlayers, setuniquePlayers] = useState([]);
+
   //const [allPlayersFromDB, setallPlayersFromDB] = useState([]);
   const [selectedDropdown, setselectedDropdown] = useState(false);
   const [values, setValues] = useState({
@@ -75,6 +82,8 @@ const MatchMarkets = ({ match }) => {
               (b.handicap ? b.handicap : 0) - (a.handicap ? a.handicap : 0)
           );
           setMarkets(sorted);
+          setFilteredMarkets(sorted);
+          defineUniquePlayers(sorted);
         })
       )
       .then(() => {
@@ -82,6 +91,9 @@ const MatchMarkets = ({ match }) => {
           setallMatches(data);
         });
       });
+
+    setSelectedMarketType("Prop Type");
+    setSelectedPlayer("Player");
   };
 
   const preloadUserPreferences = (userId) => {
@@ -111,31 +123,36 @@ const MatchMarkets = ({ match }) => {
     return true;
   };
 
-  const uniquePlayers = markets
-    .filter((o) => {
-      return !(o.sportsbook === "TAB" || o.sportsbook === "FoxBet");
-    })
-    .map((item) => {
-      let lowercaseName = item.player
-        .normalize("NFD")
-        .replace(/[^\w\s]|_/g, "")
-        .replace(/\s+/g, " ")
-        .toLowerCase();
-      return lowercaseName.replace(/[^\w\s]/gi, "");
-    })
-    .filter((value, index, self) => self.indexOf(value) === index)
-    .filter((value, index, self) => {
-      return !self.some((o) => {
-        if (o !== value) {
-          return (
-            mutation(o, value) && o.substring(0, 1) === value.substring(0, 1)
-          );
-        }
-      });
-    })
-    .filter((o) => {
-      return !o.includes("efense") && !o.includes("ouchdown");
-    });
+  const defineUniquePlayers = (filteredMarkets) => {
+    setuniquePlayers(
+      filteredMarkets
+        .filter((o) => {
+          return !(o.sportsbook === "TAB" || o.sportsbook === "FoxBet");
+        })
+        .map((item) => {
+          let lowercaseName = item.player
+            .normalize("NFD")
+            .replace(/[^\w\s]|_/g, "")
+            .replace(/\s+/g, " ")
+            .toLowerCase();
+          return lowercaseName.replace(/[^\w\s]/gi, "");
+        })
+        .filter((value, index, self) => self.indexOf(value) === index)
+        .filter((value, index, self) => {
+          return !self.some((o) => {
+            if (o !== value) {
+              return (
+                mutation(o, value) &&
+                o.substring(0, 1) === value.substring(0, 1)
+              );
+            }
+          });
+        })
+        .filter((o) => {
+          return !o.includes("efense") && !o.includes("ouchdown");
+        })
+    );
+  };
 
   const toggleAmerican = () => {
     setOddsPref(1 - oddsPref);
@@ -174,11 +191,57 @@ const MatchMarkets = ({ match }) => {
     return out;
   };
 
+  ////////////////////////////////////////////////////////////////
+  // compile lists for dropdown filters
+  const marketMarketTypes = markets.map((market) => {
+    return market.marketType;
+  });
+  const uniqueMarketTypes = [...new Set(marketMarketTypes)];
+
+  const SetRelevantPlayer = (event) => {
+    const PlayerOfInterest = event.target.value;
+    setSelectedPlayer(PlayerOfInterest);
+    UpdateFilters(PlayerOfInterest, selectedMarketType);
+  };
+
+  const SetRelevantMarketType = (event) => {
+    const MarketTypeOfInterest = event.target.value;
+    setSelectedMarketType(MarketTypeOfInterest);
+    UpdateFilters(selectedPlayer, MarketTypeOfInterest);
+  };
+
+  const clearFilters = (event) => {
+    setFilteredMarkets(markets);
+
+    setSelectedMarketType("Prop Type");
+    setSelectedPlayer("Player");
+  };
+
+  // action filters
+  const UpdateFilters = (selectedPlayer, selectedMarketType) => {
+    const theFiltering = markets.filter((o) => {
+      return (selectedPlayer === "Player"
+        ? true
+        : o.player
+            .normalize("NFD")
+            .replace(/[^\w\s]|_/g, "")
+            .replace(/\s+/g, " ")
+            .toLowerCase()
+            .replace(/[^\w\s]/gi, "")) === selectedPlayer &&
+        selectedMarketType === "Prop Type"
+        ? true
+        : o.marketType === selectedMarketType;
+    });
+    setFilteredMarkets(theFiltering);
+    defineUniquePlayers(theFiltering);
+  };
+
+  ////////////////////////////////////////////////
   const renderButtons = () => {
     if (markets.length) {
       return (
         <div className="row m-4">
-          <div className="col-6 form-group">
+          <div className="col-8 form-group">
             <select
               className="form-control dropdown-toggle btn-warning bg-warning-alt btn-lg btn-block text-white"
               placeholder="Match"
@@ -195,7 +258,7 @@ const MatchMarkets = ({ match }) => {
                 ))}
             </select>
           </div>
-          <div className="col-6">
+          <div className="col-4">
             <button
               className="btn btn-lg  btn-warning bg-warning-alt btn-block text-white"
               onClick={toggleAmerican}
@@ -219,13 +282,61 @@ const MatchMarkets = ({ match }) => {
     }
   };
 
+  const renderButtons2 = () => {
+    return (
+      <div className="row m-4">
+        <div className="col-4 form-group">
+          <select
+            className="form-control dropdown-toggle btn-warning bg-warning-alt btn-lg btn-block text-white"
+            placeholder="MarketType"
+            value={selectedMarketType}
+            onChange={SetRelevantMarketType}
+          >
+            <option className="text-center text-white">Prop Type</option>
+            {uniqueMarketTypes &&
+              uniqueMarketTypes.map((marketType, index) => (
+                <option key={index} value={marketType}>
+                  {marketType}
+                </option>
+              ))}
+          </select>
+        </div>
+        <div className="col-4 form-group">
+          <select
+            className="form-control dropdown-toggle btn-warning bg-warning-alt btn-lg btn-block text-white"
+            placeholder="Player"
+            value={selectedPlayer}
+            onChange={SetRelevantPlayer}
+          >
+            <option className="text-center text-white">Player</option>
+            {uniquePlayers &&
+              uniquePlayers.map((player, index) => (
+                <option key={index} value={player}>
+                  {player}
+                </option>
+              ))}
+          </select>
+        </div>
+
+        <div className="col-4">
+          <button
+            className="btn btn-lg  btn-warning bg-warning-alt btn-block text-white"
+            onClick={clearFilters}
+          >
+            Clear all filters
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   const cardSnippet = (markets, thisPlayer, isUnder, oddsPref, index) => {
     if (league === "NBA") {
       return (
         <div className="row">
           <div key={index} className="col-1"></div>
           <div key={index} className="col-10 mb-4">
-            <CardMarkets
+            <CardMarkets_NBA
               market={markets}
               player={thisPlayer}
               isUnder={isUnder}
@@ -264,7 +375,7 @@ const MatchMarkets = ({ match }) => {
         <div className="row">
           <div key={index} className="col-1"></div>
           <div key={index} className="col-10 mb-4">
-            <CardMarkets
+            <CardMarkets_NFL
               market={markets}
               player={thisPlayer}
               isUnder={isUnder}
@@ -303,12 +414,13 @@ const MatchMarkets = ({ match }) => {
           <br></br>
         </div>
         {renderButtons()}
+        {renderButtons2()}
         <div className="row bg-dark-alt text-white rounded">
-          {markets.length && (
+          {filteredMarkets.length && (
             <div className="container-fluid">
               {uniquePlayers.map((thisPlayer, index) => {
                 return cardSnippet(
-                  markets,
+                  filteredMarkets,
                   thisPlayer,
                   isUnder,
                   oddsPref,

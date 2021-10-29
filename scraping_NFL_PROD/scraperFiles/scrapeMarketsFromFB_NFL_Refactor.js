@@ -17,7 +17,7 @@ exports.scrapeFBMarkets = async () => {
   const a = await deleteOneSportsbookMarketsFromDB("FoxBet");
   let matchList = await queryForAllExternalMatches();
   matchList = matchList.filter((o) => {
-    return o.sportsbook === "FoxBet";
+    return o.sportsbook === "FoxBet" && o.league === "NFL";
   });
 
   for (let i = 0; i < matchList.length; i++) {

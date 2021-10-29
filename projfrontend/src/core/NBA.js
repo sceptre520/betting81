@@ -4,7 +4,7 @@ import Base from "./Base";
 import CardMatches from "./CardMatches";
 import { getMatches } from "./helper/matchHelper";
 
-export default function NFL() {
+export default function NBA() {
   const [matches, setMatches] = useState([]);
   const [error, setError] = useState(false);
 
@@ -17,7 +17,7 @@ export default function NFL() {
         const filteredMatches = data
           .sort((a, b) => a.date.localeCompare(b.date))
           .filter((data) => {
-            return data.league === "NFL";
+            return data.league === "NBA";
           });
         setMatches(filteredMatches);
       }
@@ -30,8 +30,8 @@ export default function NFL() {
 
   return (
     <Base
-      title="NFL Player Prop Bets and Arbs"
-      description="Compare passing yards, rushing yards, receiving yards and TDs"
+      title="NBA Player Prop Bets and Arbs"
+      description="Compare points, assists and rebounds"
     >
       <div className="row container-fluid text-center align-center mt-0">
         <div className="row container-fluid card-matches p-2">

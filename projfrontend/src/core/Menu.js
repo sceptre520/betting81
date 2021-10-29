@@ -28,6 +28,24 @@ const Menu = ({ history }) => (
       </li>
       <li className="nav-item">
         <Link
+          style={currentTab(history, "/nfl-player-prop-arb-bets")}
+          className="nav-link"
+          to="/nfl-player-prop-arb-bets"
+        >
+          NFL
+        </Link>
+      </li>
+      <li className="nav-item">
+        <Link
+          style={currentTab(history, "/nba-player-prop-arb-bets")}
+          className="nav-link"
+          to="/nba-player-prop-arb-bets"
+        >
+          NBA
+        </Link>
+      </li>
+      <li className="nav-item">
+        <Link
           style={currentTab(history, "/about")}
           className="nav-link"
           to="/about"
@@ -44,15 +62,7 @@ const Menu = ({ history }) => (
           How To Bet Player Props
         </Link>
       </li>
-      <li className="nav-item">
-        <Link
-          style={currentTab(history, "/nfl-player-prop-arb-bets")}
-          className="nav-link"
-          to="/nfl-player-prop-arb-bets"
-        >
-          NFL
-        </Link>
-      </li>
+
       <li className="nav-item">
         <Link
           style={currentTab(history, "/arbs")}

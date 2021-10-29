@@ -14,10 +14,10 @@ const APIurl = "http://localhost:8000/api";
 // ////////////////////////////////////////////////////////////////////////////////
 
 exports.scrapeSportsBettingMarkets = async () => {
-  const a = await deleteOneSportsbookMarketsFromDB("MaximBet");
+  // const a = await deleteOneSportsbookMarketsFromDB("MaximBet");
   let matchList = await queryForAllExternalMatches();
   matchList = matchList.filter((o) => {
-    return o.sportsbook === "MaximBet" && o.league === "NFL";
+    return o.sportsbook === "MaximBet" && o.league === "NBA";
   });
 
   for (let i = 0; i < matchList.length; i++) {
@@ -39,7 +39,7 @@ exports.scrapeSportsBettingMarkets = async () => {
         return o.active && o.display;
       });
 
-      let stats = ["Passing", "Receiving", "Rushing", "FirstTD"]; //
+      let stats = ["Points", "Rebounds", "Assists", "PRA", "P+A", "P+R"];
       for (const stat of stats) {
         await InnerLoop(stat, playerPropMarkets, playerPropSelections, matchId);
       }
@@ -55,16 +55,20 @@ const InnerLoop = async (
 ) => {
   let marketType;
 
-  if (stat === "Passing") {
-    marketType = "Total Pass Yards";
-  } else if (stat === "Receiving") {
-    marketType = "Receiving Yards";
-  } else if (stat === "Rushing") {
-    marketType = "Rushing Yards";
-  } else if (stat === "FirstTD") {
-    marketType = "First Touchdown Scorer";
+  if (stat === "Points") {
+    marketType = "- Total Points";
+  } else if (stat === "Rebounds") {
+    marketType = "- Total Rebounds";
+  } else if (stat === "Assists") {
+    marketType = "- Total Assists";
+  } else if (stat === "PRA") {
+    marketType = "- Total Points, Rebounds and Assists";
+  } else if (stat === "P+A") {
+    marketType = "- Total Points and Assists";
+  } else if (stat === "P+R") {
+    marketType = "- Total Points And Rebounds";
   } else {
-    marketType = "Fuck knows";
+    marketType = stat;
   }
 
   let playerMarkets;
@@ -119,7 +123,7 @@ const InnerLoop = async (
           return theseSelections.includes(o.id);
         });
 
-        const playerName = o.name.split(" (")[0];
+        const playerName = o.name.split(" -")[0];
 
         if (OUT2) {
           const BIGOUTS = OUT2.map((o) => {
@@ -189,14 +193,11 @@ const InnerLoop = async (
 
 const mapLoop = async (MarketOutputs) => {
   //console.log("Start");
-
   const promises = MarketOutputs.map(async (market) => {
     const numFruit = await writeMarketsToDB(market);
     return numFruit;
   });
-
   const numFruits = await Promise.all(promises);
-  //console.log(numFruits);
-
+  console.log(numFruits);
   //console.log("End");
 };

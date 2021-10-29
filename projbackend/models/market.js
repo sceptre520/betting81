@@ -35,6 +35,17 @@ const marketSchema = new mongoose.Schema({
     ref: "Match",
     required: true,
   },
+  updatedAt: {
+    type: Date,
+    required: true,
+    default: Date.now,
+  },
+  updatedBy: {
+    type: String,
+    trim: true,
+    maxlength: 32,
+    default: "CRON",
+  },
 });
 
 module.exports = mongoose.model("Market", marketSchema);

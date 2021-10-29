@@ -13,10 +13,12 @@ const APIurl = "http://localhost:8000/api";
 
 ////////////////////////////////////////////////////////////////////////////////
 exports.scrapeBovadaMarkets = async () => {
-  const a = await deleteOneSportsbookMarketsFromDB("Bovada");
+  // const a = await deleteOneSportsbookMarketsFromDB("Bovada");
+
   let matchList = await queryForAllExternalMatches();
+
   matchList = matchList.filter((o) => {
-    return o.sportsbook === "Bovada" && o.league === "NFL";
+    return o.sportsbook === "Bovada" && o.league === "NBA";
   });
 
   for (let i = 0; i < matchList.length; i++) {
@@ -40,14 +42,18 @@ exports.scrapeBovadaMarkets = async () => {
 const mapLoop = async (MarketOutputs) => {
   //console.log("Start");
 
-  const promises = MarketOutputs.map(async (market) => {
-    const numFruit = await writeMarketsToDB(market);
-    return numFruit;
-  });
+  let promises;
+  if (MarketOutputs.map instanceof Function) {
+    promises = MarketOutputs.map(async (market) => {
+      const numFruit = await writeMarketsToDB(market);
+      return numFruit;
+    });
+  } else {
+    promises = await writeMarketsToDB(MarketOutputs);
+  }
 
   const numFruits = await Promise.all(promises);
   // console.log(numFruits);
-
   //console.log("End");
 };
 
@@ -56,12 +62,7 @@ const InnerLoop = async (scrapedOdds, matchId) => {
 
   if (output) {
     const playerProps = output.filter((o) => {
-      return (
-        o.description === "Touchdown Props" ||
-        o.description === "Quarterback Props" ||
-        o.description === "Receiving Props" ||
-        o.description === "Rushing Props"
-      );
+      return o.description === "Player Props";
     });
 
     if (playerProps) {
@@ -70,30 +71,41 @@ const InnerLoop = async (scrapedOdds, matchId) => {
 
         const playerProps2 = Category.markets;
         if (playerProps2) {
-          let stats = ["Passing", "Rushing", "Receiving"]; //, "FirstTD"
+          let stats = [
+            "Points",
+            "Rebounds",
+            "Assists",
+            "Double Double",
+            "Triple Double",
+            "PRA",
+            "Threes",
+          ];
           for (const stat of stats) {
             const playerMarkets = playerProps2.filter((o) => {
               let condition;
-              if (stat === "Passing") {
-                condition = "Total Passing Yards";
-              } else if (stat === "Rushing") {
-                condition = "Total Rushing Yards";
-              } else if (stat === "Receiving") {
-                condition = "Total Receiving Yards";
-              } else if (stat === "FirstTD") {
-                condition = "First Touchdown Scorer";
+              if (stat === "Points") {
+                condition = "Total Points -";
+              } else if (stat === "Rebounds") {
+                condition = "Total Rebounds -";
+              } else if (stat === "Assists") {
+                condition = "Total Assists -";
+              } else if (stat === "Double Double") {
+                condition = "To Record a Double-Double";
+              } else if (stat === "Triple Double") {
+                condition = "To Record a Triple-Double";
+              } else if (stat === "PRA") {
+                condition = "Total Points, Rebounds and Assists -";
+              } else if (stat === "Threes") {
+                condition = "Total Made 3 Point Shots";
               } else {
                 condition = "No Idea";
               }
-              return (
-                (o.description === condition && stat === "FirstTD") ||
-                (o.description.startsWith(condition) && stat !== "FirstTD")
-              );
+              return o.description.startsWith(condition);
             });
 
             if (playerMarkets) {
               let BigOuts = [];
-              if (stat === "FirstTD") {
+              if (stat === "Double Double" || stat === "Triple Double") {
                 const SELECTIONS = playerMarkets.map((o) => {
                   if (o.outcomes) {
                     const pointsMarkets = o.outcomes.filter((o) => {
@@ -118,7 +130,7 @@ const InnerLoop = async (scrapedOdds, matchId) => {
                   }
                 });
 
-                BigOuts.push(SELECTIONS);
+                BigOuts.push(...SELECTIONS);
               } else {
                 playerMarkets.map((o) => {
                   if (o.outcomes) {
@@ -182,7 +194,7 @@ const InnerLoop = async (scrapedOdds, matchId) => {
                       return o; //removes undefineds
                     });
 
-                    BigOuts.push(filteredOutcomes);
+                    BigOuts.push(...filteredOutcomes);
                   }
                 });
               }
@@ -193,7 +205,6 @@ const InnerLoop = async (scrapedOdds, matchId) => {
                 for (let i = 0; i < BigOuts.length; i++) {
                   var Z = await mapLoop(BigOuts[i]);
                 }
-                //console.log("Wrote something");
               }
             }
           }

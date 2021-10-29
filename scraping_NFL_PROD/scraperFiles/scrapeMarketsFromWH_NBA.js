@@ -14,10 +14,10 @@ const APIurl = "http://localhost:8000/api";
 
 // ////////////////////////////////////////////////////////////////////////////////
 exports.scrapeWHMarkets = async () => {
-  const a = await deleteOneSportsbookMarketsFromDB("William Hill");
+  // const a = await deleteOneSportsbookMarketsFromDB("William Hill");
   let matchList = await queryForAllExternalMatches();
   matchList = matchList.filter((o) => {
-    return o.sportsbook === "William Hill" && o.league === "NFL";
+    return o.sportsbook === "William Hill" && o.league === "NBA";
   });
 
   for (let i = 0; i < matchList.length; i++) {
@@ -32,14 +32,26 @@ exports.scrapeWHMarkets = async () => {
 
     if (scrapedOdds) {
       const playerProps = scrapedOdds.markets.filter((o) => {
-        return (
-          o.collectionName === "Player Props" ||
-          o.collectionName === "TD Scorer"
-        );
+        return o.collectionName === "Player Props";
       });
 
       if (playerProps) {
-        let stats = ["Passing", "Receiving", "Rushing", "FirstTD"];
+        let stats = [
+          "Points",
+          "Rebounds",
+          "Assists",
+          "Double Double",
+          "Triple Double",
+          "PRA",
+          "Blocks",
+          "Steals",
+          "Turnovers",
+          "Threes",
+          "P+A",
+          "P+R",
+          "A+R",
+          "S+B",
+        ];
 
         for (const stat of stats) {
           await InnerLoop(playerProps, matchId, stat);
@@ -51,16 +63,20 @@ exports.scrapeWHMarkets = async () => {
 
 const InnerLoop = async (playerProps, matchId, stat) => {
   let marketType;
-  if (stat === "Passing") {
-    marketType = "Passing Yards";
-  } else if (stat === "Receiving") {
-    marketType = "Receiving Yards";
-  } else if (stat === "Rushing") {
-    marketType = "Rushing Yards";
-  } else if (stat === "FirstTD") {
-    marketType = "First Touchdown Scorer";
+  if (stat === "PRA") {
+    marketType = "Points + Assists + Rebounds";
+  } else if (stat === "Threes") {
+    marketType = "3pt Field Goals";
+  } else if (stat === "P+A") {
+    marketType = "Points + Assists";
+  } else if (stat === "P+R") {
+    marketType = "Points + Rebounds";
+  } else if (stat === "A+R") {
+    marketType = "Rebounds + Assists";
+  } else if (stat === "S+B") {
+    marketType = "Blocks + Steals";
   } else {
-    marketType = "Fuck knows";
+    marketType = stat;
   }
 
   let playerMarkets;
@@ -68,6 +84,11 @@ const InnerLoop = async (playerProps, matchId, stat) => {
     playerMarkets = playerProps.filter((o) => {
       const nameWithoutPipes = o.templateName.replace(/\|/g, "");
       return nameWithoutPipes === marketType; //I have no idea what is the naming convention. More probably .type is a unique identifier
+    });
+  } else if (stat === "Double Double" || stat === "Triple Double") {
+    playerMarkets = playerProps.filter((o) => {
+      const nameWithoutPipes = o.templateName.replace(/\|/g, "");
+      return nameWithoutPipes.endsWith(`Player ${marketType}`); //I have no idea what is the naming convention. More probably .type is a unique identifier
     });
   } else {
     playerMarkets = playerProps.filter((o) => {
@@ -93,9 +114,12 @@ const InnerLoop = async (playerProps, matchId, stat) => {
             let handicap;
             let overPrice;
             let underPrice;
-            if (nameWithoutPipes === "Over") {
+            if (nameWithoutPipes === "Over" || nameWithoutPipes === "Yes") {
               overPrice = Number(outcome.price.d);
-            } else if (nameWithoutPipes === "Under") {
+            } else if (
+              nameWithoutPipes === "Under" ||
+              nameWithoutPipes === "No"
+            ) {
               underPrice = Number(outcome.price.d);
             } else {
               playerName = nameWithoutPipes;
@@ -186,14 +210,11 @@ const InnerLoop = async (playerProps, matchId, stat) => {
 
 const mapLoop = async (MarketOutputs) => {
   //console.log("Start");
-
   const promises = MarketOutputs.map(async (market) => {
     const numFruit = await writeMarketsToDB(market);
     return numFruit;
   });
-
   const numFruits = await Promise.all(promises);
-  // console.log(numFruits);
-
+  console.log(numFruits);
   //console.log("End");
 };

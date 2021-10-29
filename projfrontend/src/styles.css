@@ -172,3 +172,25 @@ ul.NoBullet {
     width: 100%;
   }
 }
+
+/* Section for setting number of columns for arbs/middles  */
+@media (max-width: 700px) {
+  .card-columns.custom-columns {
+    column-count: 3;
+  }
+}
+@media (min-width: 700px) {
+  .card-columns.custom-columns {
+    column-count: 4;
+  }
+}
+@media (min-width: 1000px) {
+  .card-columns.custom-columns {
+    column-count: 5;
+  }
+}
+@media (min-width: 1400px) {
+  .card-columns.custom-columns {
+    column-count: 6;
+  }
+}

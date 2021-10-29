@@ -18,7 +18,7 @@ exports.scrapeDKMarkets = async () => {
   const a = await deleteOneSportsbookMarketsFromDB("DraftKings");
   let matchList = await queryForAllExternalMatches();
   matchList = matchList.filter((o) => {
-    return o.sportsbook === "DraftKings";
+    return o.sportsbook === "DraftKings" && o.league === "NFL";
   });
 
   for (let i = 0; i < matchList.length; i++) {

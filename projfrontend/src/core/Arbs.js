@@ -4,9 +4,19 @@ import Base from "./Base";
 import { queryForAllArbs } from "./helper/arbHelper";
 import { Link } from "react-router-dom";
 
+import CardsForArbs from "./CardsForArbs";
+import CardsForMiddles from "./CardsForMiddles";
+
 export default function Arbs() {
   const [arbs, setArbs] = useState([]);
+  const [filteredArbs, setFilteredArbs] = useState([]);
   const [middles, setMiddles] = useState([]);
+  const [filteredMiddles, setFilteredMiddles] = useState([]);
+
+  const [selectedLeague, setSelectedLeague] = useState([]);
+  const [selectedMatch, setSelectedMatch] = useState([]);
+  const [selectedMarketType, setSelectedMarketType] = useState([]);
+
   const [error, setError] = useState(false);
 
   let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -92,6 +102,7 @@ export default function Arbs() {
               });
 
               setArbs(ArbsUnique);
+              setFilteredArbs(ArbsUnique);
             }
 
             const middleInstances = Output.filter((o) => {
@@ -126,6 +137,10 @@ export default function Arbs() {
                 return OutputId.includes(o.arbId);
               });
               setMiddles(MiddlesUnique);
+              setFilteredMiddles(MiddlesUnique);
+              setSelectedMarketType("Prop Type");
+              setSelectedLeague("League");
+              setSelectedMatch("Match");
             }
           }
         }
@@ -137,60 +152,176 @@ export default function Arbs() {
     loadAllArbs();
   }, []);
 
+  ////////////////////////////////////////////////////////////////
+  // compile lists for dropdown filters
+  const arbLeagues = filteredArbs.map((arb) => {
+    return arb.league;
+  });
+  const middleLeagues = filteredMiddles.map((arb) => {
+    return arb.league;
+  });
+  const allLeagues = arbLeagues.concat(middleLeagues);
+  const uniqueLeagues = [...new Set(allLeagues)];
+
+  const arbMatches = filteredArbs.map((arb) => {
+    return arb.matchName;
+  });
+  const middleMatches = filteredMiddles.map((arb) => {
+    return arb.matchName;
+  });
+  const allMatches = arbMatches.concat(middleMatches);
+  const uniqueMatches = [...new Set(allMatches)];
+
+  const arbMarketTypes = filteredArbs.map((arb) => {
+    return arb.marketType;
+  });
+  const middleMarketTypes = filteredMiddles.map((arb) => {
+    return arb.marketType;
+  });
+  const allMarketTypes = arbMarketTypes.concat(middleMarketTypes);
+  const uniqueMarketTypes = [...new Set(allMarketTypes)];
+
+  // action filters
+  const UpdateFilters = (selectedLeague, selectedMatch, selectedMarketType) => {
+    setFilteredArbs(
+      arbs.filter((o) => {
+        return (
+          (selectedMatch === "Match" ? true : o.matchName === selectedMatch) &&
+          (selectedLeague === "League" ? true : o.league === selectedLeague) &&
+          (selectedMarketType === "Prop Type"
+            ? true
+            : o.marketType === selectedMarketType)
+        );
+      })
+    );
+
+    setFilteredMiddles(
+      middles.filter((o) => {
+        return (
+          (selectedMatch === "Match" ? true : o.matchName === selectedMatch) &&
+          (selectedLeague === "League" ? true : o.league === selectedLeague) &&
+          (selectedMarketType === "Prop Type"
+            ? true
+            : o.marketType === selectedMarketType)
+        );
+      })
+    );
+  };
+
+  const SetRelevantMatch = (event) => {
+    const MatchOfInterest = event.target.value;
+    setSelectedMatch(MatchOfInterest);
+    UpdateFilters(selectedLeague, MatchOfInterest, selectedMarketType);
+  };
+
+  const SetRelevantLeague = (event) => {
+    const LeagueOfInterest = event.target.value;
+    setSelectedLeague(LeagueOfInterest);
+    UpdateFilters(LeagueOfInterest, selectedMatch, selectedMarketType);
+  };
+
+  const SetRelevantMarketType = (event) => {
+    const MarketTypeOfInterest = event.target.value;
+    setSelectedMarketType(MarketTypeOfInterest);
+    UpdateFilters(selectedLeague, selectedMatch, MarketTypeOfInterest);
+  };
+
+  const clearFilters = (event) => {
+    setFilteredArbs(arbs);
+    setFilteredMiddles(middles);
+
+    setSelectedMarketType("Prop Type");
+    setSelectedLeague("League");
+    setSelectedMatch("Match");
+  };
+
+  const renderButtons = () => {
+    return (
+      <div className="row m-4">
+        <div className="col-2 form-group">
+          <select
+            className="form-control dropdown-toggle btn-warning bg-warning-alt btn-lg btn-block text-white"
+            placeholder="League"
+            value={selectedLeague}
+            onChange={SetRelevantLeague}
+          >
+            <option className="text-center text-white">League</option>
+            {uniqueLeagues &&
+              uniqueLeagues.map((league, index) => (
+                <option key={index} value={league}>
+                  {league}
+                </option>
+              ))}
+          </select>
+        </div>
+        <div className="col-4 form-group">
+          <select
+            className="form-control dropdown-toggle btn-warning bg-warning-alt btn-lg btn-block text-white"
+            placeholder="Match"
+            value={selectedMatch}
+            onChange={SetRelevantMatch}
+          >
+            <option className="text-center text-white">Match</option>
+            {uniqueMatches &&
+              uniqueMatches.map((league, index) => (
+                <option key={index} value={league}>
+                  {league}
+                </option>
+              ))}
+          </select>
+        </div>
+        <div className="col-3 form-group">
+          <select
+            className="form-control dropdown-toggle btn-warning bg-warning-alt btn-lg btn-block text-white"
+            placeholder="Prop Type"
+            value={selectedMarketType}
+            onChange={SetRelevantMarketType}
+          >
+            <option className="text-center text-white">Prop Type</option>
+            {uniqueMarketTypes &&
+              uniqueMarketTypes.map((league, index) => (
+                <option key={index} value={league}>
+                  {league}
+                </option>
+              ))}
+          </select>
+        </div>
+        <div className="col-3">
+          <button
+            className="btn btn-lg  btn-warning bg-warning-alt btn-block text-white"
+            onClick={clearFilters}
+          >
+            Clear all filters
+          </button>
+        </div>
+      </div>
+    );
+  };
+  ////////////////////////////////////////////////////////////////
+
   const arbsBody = () => {
     if (arbs.length || middles.length) {
       return (
         <div>
-          <div className="text-center">
-            <section>
-              <ul className="text-center NoBullet">
-                {arbs.map((arb, index) => {
-                  return (
-                    <li key={index}>
-                      <p>
-                        <b className="text-success">
-                          {100 * arb.bookPerc.toFixed(3)}% Arbitrage
-                        </b>
-                        <br></br>
-                        {arb.league}:{" "}
-                        <a href={arb.matchPath}>{arb.matchName}</a> <br></br>
-                        {arb.player} {arb.marketType} {arb.Ohandicap}
-                        <br></br>
-                        {arb.overString} / {arb.underString}
-                        <br></br>
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          </div>
-          <div className="text-center">
-            <section>
-              <ul className="text-center NoBullet">
-                {middles.map((middle, index) => {
-                  return (
-                    <li key={index}>
-                      <p>
-                        <b className="text-success">
-                          {middle.middleSize} Point Middle
-                        </b>
-                        <br></br>
-                        {middle.league}:{" "}
-                        <a href={middle.matchPath}>{middle.matchName}</a>{" "}
-                        <br></br>
-                        {middle.player} {middle.marketType}
-                        <br></br>
-                        {middle.Ohandicap} {middle.overString}
-                        <br></br>
-                        {middle.Uhandicap} {middle.underString}
-                        <br></br>
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
+          {renderButtons()}
+          <div className="row container-fluid text-center align-center mt-0">
+            <div className="row container-fluid card-matches p-2">
+              {filteredArbs.map((arb, index) => {
+                return (
+                  <div key={index} className="card-matches-margins mb-4">
+                    <CardsForArbs arb={arb} />
+                  </div>
+                );
+              })}
+
+              {filteredMiddles.map((middle, index) => {
+                return (
+                  <div key={index} className="card-matches-margins mb-4">
+                    <CardsForMiddles middle={middle} />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       );

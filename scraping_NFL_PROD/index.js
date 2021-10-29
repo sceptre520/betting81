@@ -31,6 +31,31 @@ const marketsWH = require("./scraperFiles/scrapeMarketsFromWH_NFL_Refactor");
 
 const ArbIdentification = require("./scraperFiles/arbIdentification_Refactor");
 
+// const twitterFuncts = require("./TweetBot/twitterbot");
+
+////////////////////////////////////////////////////////////
+// NBA
+const matchesPB_NBA = require("./scraperFiles/scrapeMatchesFromPB_NBA");
+const marketsPB_NBA = require("./scraperFiles/scrapeMarketsFromPB_NBA");
+
+const matchesBovada_NBA = require("./scraperFiles/scrapeMatchesFromBovada_NBA");
+const marketsBovada_NBA = require("./scraperFiles/scrapeMarketsFromBovada_NBA");
+
+const matchesDK_NBA = require("./scraperFiles/scrapeMatchesFromDK_NBA");
+const marketsDK_NBA = require("./scraperFiles/scrapeMarketsFromDK_NBA");
+
+const matchesFB_NBA = require("./scraperFiles/scrapeMatchesFromFB_NBA");
+const marketsFB_NBA = require("./scraperFiles/scrapeMarketsFromFB_NBA");
+
+const matchesRivers_NBA = require("./scraperFiles/scrapeMatchesFromRivers_NBA");
+const marketsRivers_NBA = require("./scraperFiles/scrapeMarketsFromRivers_NBA");
+
+const matchesSportsBetting_NBA = require("./scraperFiles/scrapeMatchesFromSportsBetting_NBA");
+const marketsSportsBetting_NBA = require("./scraperFiles/scrapeMarketsFromSportsBetting_NBA");
+
+const matchesWH_NBA = require("./scraperFiles/scrapeMatchesFromWH_NBA");
+const marketsWH_NBA = require("./scraperFiles/scrapeMarketsFromWH_NBA");
+
 ////////////////////////////////////////////////////////
 var pipeline = [null, null, null];
 var cron_cnt = 0;
@@ -40,13 +65,14 @@ var run = async () => {
   try {
     console.log("Starting: PB Matches");
     var PBMatches = await matchesPB.scrapePBMatches();
+    var PBMatchesNBA = await matchesPB_NBA.scrapePBMatches();
     //console.log(PBMatches)
     console.log("Successful: PB Matches");
   } catch (error) {
     console.log("Failed: PB Matches");
   }
 
-  //B
+  //B1
   try {
     console.log("Starting: PB Markets");
     var PBMarkets = await marketsPB.scrapePBMarkets();
@@ -56,7 +82,17 @@ var run = async () => {
     console.log("Failed: PB Markets");
   }
 
-  //C
+  //B2
+  try {
+    console.log("Starting: PB Markets");
+    var PBMarketsNBA = await marketsPB_NBA.scrapePBMarkets();
+    //console.log(PBMarkets)
+    console.log("Successful: PB Markets");
+  } catch (error) {
+    console.log("Failed: PB Markets");
+  }
+
+  //C1
   try {
     console.log("Starting: Other Matches");
     var [
@@ -74,13 +110,39 @@ var run = async () => {
       matchesSportsBetting.scrapeSportsBettingMatches(),
       matchesWH.scrapeWHMatches(),
     ]);
+
     //console.log(BovadaMatches, DKMatches, FBMatches,RiversMatches,SportsBettingMatches,WHMatches)
     console.log("Successful: Other Matches");
   } catch (error) {
     console.log("Failed: Other Matches");
   }
 
-  //D
+  //C2
+  try {
+    console.log("Starting: Other Matches");
+
+    var [
+      BovadaMatches_NBA,
+      DKMatches_NBA,
+      FBMatches_NBA,
+      RiversMatches_NBA,
+      SportsBettingMatches_NBA,
+      WHMatches_NBA,
+    ] = await Promise.all([
+      matchesBovada_NBA.scrapeBovadaMatches(),
+      matchesDK_NBA.scrapeDKMatches(),
+      matchesFB_NBA.scrapeFBMatches(),
+      matchesRivers_NBA.scrapeRiversMatches(),
+      matchesSportsBetting_NBA.scrapeSportsBettingMatches(),
+      matchesWH_NBA.scrapeWHMatches(),
+    ]);
+    //console.log(BovadaMatches, DKMatches, FBMatches,RiversMatches,SportsBettingMatches,WHMatches)
+    console.log("Successful: Other Matches");
+  } catch (error) {
+    console.log("Failed: Other Matches");
+  }
+
+  //D1
   try {
     console.log("Starting: Other Markets");
     var [
@@ -98,6 +160,32 @@ var run = async () => {
       marketsSportsBetting.scrapeSportsBettingMarkets(),
       marketsWH.scrapeWHMarkets(),
     ]);
+
+    //console.log(BovadaMarkets, DKMarkets, FBMarkets,RiversMarkets,SportsBettingMarkets,WHMarkets)
+    console.log("Successful: Other Markets");
+  } catch (error) {
+    console.log("Failed: Other Markets");
+  }
+
+  //D2
+  try {
+    console.log("Starting: Other Markets");
+
+    var [
+      BovadaMarkets_NBA,
+      DKMarkets_NBA,
+      FBMarkets_NBA,
+      RiversMarkets_NBA,
+      SportsBettingMarkets_NBA,
+      WHMarkets_NBA,
+    ] = await Promise.all([
+      marketsBovada_NBA.scrapeBovadaMarkets(),
+      marketsDK_NBA.scrapeDKMarkets(),
+      marketsFB_NBA.scrapeFBMarkets(),
+      marketsRivers_NBA.scrapeRiversMarkets(),
+      marketsSportsBetting_NBA.scrapeSportsBettingMarkets(),
+      marketsWH_NBA.scrapeWHMarkets(),
+    ]);
     //console.log(BovadaMarkets, DKMarkets, FBMarkets,RiversMarkets,SportsBettingMarkets,WHMarkets)
     console.log("Successful: Other Markets");
   } catch (error) {
@@ -113,6 +201,16 @@ var run = async () => {
   } catch (error) {
     console.log("Failed: Arbs");
   }
+
+  //F
+  // try {
+  //   console.log("Starting: Tweeting");
+  //   var Tweets = await twitterFuncts.TweetArbs(5);
+  //   //console.log(Arbs)
+  //   console.log("Successful: Tweeting");
+  // } catch (error) {
+  //   console.log("Failed: Tweeting");
+  // }
 };
 
 console.log("                                             ");
