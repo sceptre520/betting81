@@ -51,7 +51,7 @@ const matchesRivers_NBA = require("./scraperFiles/scrapeMatchesFromRivers_NBA");
 const marketsRivers_NBA = require("./scraperFiles/scrapeMarketsFromRivers_NBA");
 
 const matchesSportsBetting_NBA = require("./scraperFiles/scrapeMatchesFromSportsBetting_NBA");
-const marketsSportsBetting_NBA = require("./scraperFiles/scrapeMarketsFromSportsBetting_NBA");
+const marketsSportsBetting_NBA = require("./scraperFiles/scrapeMarketsFromSportsbetting_NBA");
 
 const matchesWH_NBA = require("./scraperFiles/scrapeMatchesFromWH_NBA");
 const marketsWH_NBA = require("./scraperFiles/scrapeMarketsFromWH_NBA");
