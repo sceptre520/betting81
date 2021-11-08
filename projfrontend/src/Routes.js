@@ -10,6 +10,7 @@ import About from "./core/About";
 import HowTo from "./core/How To";
 import NFL from "./core/NFL";
 import NBA from "./core/NBA";
+import NHL from "./core/NHL";
 import Arbs from "./core/Arbs";
 import MatchMarkets from "./admin/MatchMarkets";
 import AddTeam from "./admin/AddTeam";
@@ -39,6 +40,7 @@ const Routes = () => {
         />
         <Route path="/nfl-player-prop-arb-bets" exact component={NFL} />
         <Route path="/nba-player-prop-arb-bets" exact component={NBA} />
+        <Route path="/nhl-player-prop-arb-bets" exact component={NHL} />
         <Route path="/signup" exact component={Signup} />
         <Route path="/signin" exact component={Signin} />
         <Route path="/arbs" exact component={Arbs} />

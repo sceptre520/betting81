@@ -56,6 +56,32 @@ const marketsSportsBetting_NBA = require("./scraperFiles/scrapeMarketsFromSports
 const matchesWH_NBA = require("./scraperFiles/scrapeMatchesFromWH_NBA");
 const marketsWH_NBA = require("./scraperFiles/scrapeMarketsFromWH_NBA");
 
+////////////////////////////////////////////////////////////
+// NHL
+const matchesPB_NHL = require("./scraperFiles/scrapeMatchesFromPB_NHL");
+const marketsPB_NHL = require("./scraperFiles/scrapeMarketsFromPB_NHL");
+
+const matchesBovada_NHL = require("./scraperFiles/scrapeMatchesFromBovada_NHL");
+const marketsBovada_NHL = require("./scraperFiles/scrapeMarketsFromBovada_NHL");
+
+const matchesDK_NHL = require("./scraperFiles/scrapeMatchesFromDK_NHL");
+const marketsDK_NHL = require("./scraperFiles/scrapeMarketsFromDK_NHL");
+
+// const matchesFB_NHL = require("./scraperFiles/scrapeMatchesFromFB_NHL");
+// const marketsFB_NHL = require("./scraperFiles/scrapeMarketsFromFB_NHL");
+
+const matchesRivers_NHL = require("./scraperFiles/scrapeMatchesFromRivers_NHL");
+const marketsRivers_NHL = require("./scraperFiles/scrapeMarketsFromRivers_NHL");
+
+// const matchesSportsBetting_NHL = require("./scraperFiles/scrapeMatchesFromSportsBetting_NHL");
+// const marketsSportsBetting_NHL = require("./scraperFiles/scrapeMarketsFromSportsBetting_NHL");
+
+const matchesWH_NHL = require("./scraperFiles/scrapeMatchesFromWH_NHL");
+const marketsWH_NHL = require("./scraperFiles/scrapeMarketsFromWH_NHL");
+
+////////// TWITTER //////////////////////////////////////////////
+const { TweetMiddles, TweetArbs } = require("./TweetBot/twitterbot");
+
 ////////////////////////////////////////////////////////
 var pipeline = [null, null, null];
 var cron_cnt = 0;
@@ -66,6 +92,7 @@ var run = async () => {
     console.log("Starting: PB Matches");
     var PBMatches = await matchesPB.scrapePBMatches();
     var PBMatchesNBA = await matchesPB_NBA.scrapePBMatches();
+    var PBMatchesNHL = await matchesPB_NHL.scrapePBMatches();
     //console.log(PBMatches)
     console.log("Successful: PB Matches");
   } catch (error) {
@@ -82,10 +109,11 @@ var run = async () => {
     console.log("Failed: PB Markets");
   }
 
-  //B2
+  //B2 & B3
   try {
     console.log("Starting: PB Markets");
     var PBMarketsNBA = await marketsPB_NBA.scrapePBMarkets();
+    var PBMarketsNHL = await marketsPB_NHL.scrapePBMarkets();
     //console.log(PBMarkets)
     console.log("Successful: PB Markets");
   } catch (error) {
@@ -142,6 +170,31 @@ var run = async () => {
     console.log("Failed: Other Matches");
   }
 
+  //C3
+  try {
+    console.log("Starting: Other NHL Matches");
+
+    var [
+      BovadaMatches_NHL,
+      DKMatches_NHL,
+      // FBMatches_NHL,
+      RiversMatches_NHL,
+      // SportsBettingMatches_NHL,
+      WHMatches_NHL,
+    ] = await Promise.all([
+      matchesBovada_NHL.scrapeBovadaMatches(),
+      matchesDK_NHL.scrapeDKMatches(),
+      // matchesFB_NHL.scrapeFBMatches(),
+      matchesRivers_NHL.scrapeRiversMatches(),
+      // matchesSportsBetting_NHL.scrapeSportsBettingMatches(),
+      matchesWH_NHL.scrapeWHMatches(),
+    ]);
+    //console.log(BovadaMatches, DKMatches, FBMatches,RiversMatches,SportsBettingMatches,WHMatches)
+    console.log("Successful: Other NHL Matches");
+  } catch (error) {
+    console.log("Failed: Other NHL Matches");
+  }
+
   //D1
   try {
     console.log("Starting: Other Markets");
@@ -192,6 +245,31 @@ var run = async () => {
     console.log("Failed: Other Markets");
   }
 
+  //D3
+  try {
+    console.log("Starting: Other NHL Markets");
+
+    var [
+      BovadaMarkets_NHL,
+      DKMarkets_NHL,
+      // FBMarkets_NHL,
+      RiversMarkets_NHL,
+      // SportsBettingMarkets_NHL,
+      WHMarkets_NHL,
+    ] = await Promise.all([
+      marketsBovada_NHL.scrapeBovadaMarkets(),
+      marketsDK_NHL.scrapeDKMarkets(),
+      // marketsFB_NHL.scrapeFBMarkets(),
+      marketsRivers_NHL.scrapeRiversMarkets(),
+      // marketsSportsBetting_NHL.scrapeSportsBettingMarkets(),
+      marketsWH_NHL.scrapeWHMarkets(),
+    ]);
+    //console.log(BovadaMarkets, DKMarkets, FBMarkets,RiversMarkets,SportsBettingMarkets,WHMarkets)
+    console.log("Successful: Other NHL Markets");
+  } catch (error) {
+    console.log("Failed: Other NHL Markets");
+  }
+
   //E
   try {
     console.log("Starting: Arbs");
@@ -202,15 +280,15 @@ var run = async () => {
     console.log("Failed: Arbs");
   }
 
-  //F
-  // try {
-  //   console.log("Starting: Tweeting");
-  //   var Tweets = await twitterFuncts.TweetArbs(5);
-  //   //console.log(Arbs)
-  //   console.log("Successful: Tweeting");
-  // } catch (error) {
-  //   console.log("Failed: Tweeting");
-  // }
+  F;
+  try {
+    console.log("Starting: Tweeting");
+    var tweet = await TweetArbs(0.995);
+    var tweetmiddle = await TweetMiddles(7);
+    console.log("Successful: Tweeting");
+  } catch (error) {
+    console.log("Failed: Tweeting");
+  }
 };
 
 console.log("                                             ");

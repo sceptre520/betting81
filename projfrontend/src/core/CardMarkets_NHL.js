@@ -1,39 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, Redirect } from "react-router-dom";
-import { getPlayers, getPlayerStats } from "./helper/playerHelper";
 
 const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
   const [redirect, setRedirect] = useState(false);
-
-  const [playerData, setplayerData] = useState([]);
-  //   const [playerStats, setplayerStats] = useState({});
-  const [teamAndPosition, setteamAndPosition] = useState("");
-
-  const preload = () => {
-    getPlayers().then((data) => {
-      setplayerData(data);
-
-      const thisPlayerDBEntry = data.filter((o) => {
-        return (
-          o.playerName.toLowerCase().replace(/[^\w\s]/gi, "") ===
-          player.toLowerCase().replace(/[^\w\s]/gi, "")
-        );
-      });
-
-      if (thisPlayerDBEntry[0]) {
-        setteamAndPosition(
-          ` (${thisPlayerDBEntry[0] ? thisPlayerDBEntry[0].teamAbbrev : ""}, ${
-            thisPlayerDBEntry[0] ? thisPlayerDBEntry[0].position : ""
-          })`
-        );
-        return thisPlayerDBEntry[0].BDL_id;
-      }
-    });
-  };
-
-  useEffect(() => {
-    preload();
-  }, []);
 
   const playerName = player;
 
@@ -64,15 +33,16 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
         playerName.substring(playerName.length - 4) &&
         normalizedName.substring(0, 1) === playerName.substring(0, 1)) ||
       //all characters in string are present in full playerName
-      mutation(playerName, normalizedName)
+      (mutation(playerName, normalizedName) &&
+        normalizedName.substring(0, 1) === playerName.substring(0, 1))
     );
   });
 
   const playerNameForDisplay = playerMarkets[0].player;
 
-  const doSomething = () => {
-    setRedirect(true);
-  };
+  //   const doSomething = () => {
+  //     setRedirect(true);
+  //   };
 
   const getARedirect = (redirect) => {
     if (redirect) {
@@ -86,6 +56,14 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
     });
 
     return result;
+  };
+
+  const doesMarketExist = (arr, marketType) => {
+    var result = arr.filter(function (o) {
+      return o.marketType === marketType;
+    });
+
+    return result.length;
   };
 
   const convertOdds = (price, isAmerican = false) => {
@@ -104,7 +82,7 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
 
   const grabHandicap = (data, isAmerican = false) => {
     if (data[0]) {
-      let HandicapPart = "";
+      let HandicapPart = "-";
       if (data[0].handicap) {
         HandicapPart = data[0].handicap.toFixed(1);
       }
@@ -117,7 +95,7 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
   const grabPrice = (data, isUnder = false, isAmerican = false) => {
     if (data[0]) {
       let PricePart = "";
-      if (isUnder && data[0].marketType !== "First Goal") {
+      if (isUnder && data[0].marketType !== "First Touchdown") {
         PricePart = convertOdds(data[0].underPrice, isAmerican);
       } else {
         PricePart = convertOdds(data[0].overPrice, isAmerican);
@@ -148,31 +126,38 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
     );
   };
 
-  const Bballreference = `https://www.hockey-reference.com/search/search.fcgi?search=${playerName.replaceAll(
+  const Bballreference = `https://www.hockey-reference.com//search/search.fcgi?search=${playerName.replaceAll(
     " ",
     "+"
   )}`;
 
   const identifyTopBook = (playerMarkets, stat, isUnder) => {
     const PointsBetMarket = getByValue(playerMarkets, stat, "PointsBet")[0];
-    const KambiMarket = getByValue(
-      playerMarkets,
-      stat === "First Basket" ? "First Field Goal" : stat,
-      "Kambi"
-    )[0];
-    const WHMarket = getByValue(
-      playerMarkets,
-      stat === "First Basket" ? "First Field Goal" : stat,
-      "William Hill"
-    )[0];
-    const SbookMarket = getByValue(
-      playerMarkets,
-      stat === "First Basket" ? "First Field Goal" : stat,
-      "Superbook"
-    )[0];
+    const KambiMarket = getByValue(playerMarkets, stat, "DraftKings")[0];
+    const WHMarket = getByValue(playerMarkets, stat, "William Hill")[0];
+    const FBMarket = getByValue(playerMarkets, stat, "FoxBet")[0];
+    const RSIMarket = getByValue(playerMarkets, stat, "Rivers")[0];
+    const BovadaMarket = getByValue(playerMarkets, stat, "Bovada")[0];
+    const SBettingMarket = getByValue(playerMarkets, stat, "MaximBet")[0];
 
-    const markets = [PointsBetMarket, KambiMarket, WHMarket, SbookMarket];
-    const bookNames = ["PointsBet", "Kambi", "William Hill", "Superbook"];
+    const markets = [
+      PointsBetMarket,
+      KambiMarket,
+      WHMarket,
+      BovadaMarket,
+      SBettingMarket,
+      FBMarket,
+      RSIMarket,
+    ];
+    const bookNames = [
+      "PointsBet",
+      "DraftKings",
+      "William Hill",
+      "Bovada",
+      "MaximBet",
+      "FoxBet",
+      "Rivers",
+    ];
 
     let books = [...Array(markets.length).keys()];
 
@@ -193,45 +178,33 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
             topBook = thisBook;
             topMarket = thisMarket;
           } else {
-            if (stat === "First Basket") {
-              let thisPrice = thisMarket.overPrice;
-              let topPrice = topMarket.overPrice;
+            let handicapDiff =
+              (topMarket.handicap ? topMarket.handicap : 0) -
+              (thisMarket.handicap ? thisMarket.handicap : 0);
 
-              let priceDiff = thisPrice - topPrice;
+            if (isUnder) {
+              handicapDiff = -handicapDiff;
+            }
+
+            if (handicapDiff === 0) {
+              let thisPrice = isUnder
+                ? thisMarket.underPrice
+                : thisMarket.overPrice;
+              let topPrice = isUnder
+                ? topMarket.underPrice
+                : topMarket.overPrice;
+
+              let priceDiff =
+                (thisPrice ? thisPrice : thisMarket.overPrice) -
+                (topPrice ? topPrice : topMarket.overPrice);
 
               if (priceDiff > 0) {
                 topBook = thisBook;
                 topMarket = thisMarket;
               }
-            } else {
-              let handicapDiff =
-                (topMarket.handicap ? topMarket.handicap : 0) -
-                (thisMarket.handicap ? thisMarket.handicap : 0);
-
-              if (isUnder) {
-                handicapDiff = -handicapDiff;
-              }
-
-              if (handicapDiff == 0) {
-                let thisPrice = isUnder
-                  ? thisMarket.underPrice
-                  : thisMarket.overPrice;
-                let topPrice = isUnder
-                  ? topMarket.underPrice
-                  : topMarket.overPrice;
-
-                let priceDiff =
-                  (thisPrice ? thisPrice : thisMarket.overPrice) -
-                  (topPrice ? topPrice : topMarket.overPrice);
-
-                if (priceDiff > 0) {
-                  topBook = thisBook;
-                  topMarket = thisMarket;
-                }
-              } else if (handicapDiff > 0) {
-                topBook = thisBook;
-                topMarket = thisMarket;
-              }
+            } else if (handicapDiff > 0) {
+              topBook = thisBook;
+              topMarket = thisMarket;
             }
           }
         }
@@ -245,36 +218,55 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
   };
 
   const highlighting = {
+    SOG: {
+      Over: identifyTopBook(playerMarkets, "Shots On Goal", false),
+      Under: identifyTopBook(playerMarkets, "Shots On Goal", true),
+    },
     Points: {
-      Over: identifyTopBook(playerMarkets, "Points", false),
-      Under: identifyTopBook(playerMarkets, "Points", true),
+      Over: identifyTopBook(playerMarkets, "Points (NHL)", false),
+      Under: identifyTopBook(playerMarkets, "Points (NHL)", true),
     },
     Goals: {
-      Over: identifyTopBook(playerMarkets, "Goals", false),
-      Under: identifyTopBook(playerMarkets, "Goals", true),
+      Over: identifyTopBook(playerMarkets, "Goals (NHL)", false),
+      Under: identifyTopBook(playerMarkets, "Goals (NHL)", true),
     },
     Assists: {
-      Over: identifyTopBook(playerMarkets, "Assists", false),
-      Under: identifyTopBook(playerMarkets, "Assists", true),
+      Over: identifyTopBook(playerMarkets, "Assists (NHL)", false),
+      Under: identifyTopBook(playerMarkets, "Assists (NHL)", true),
     },
-    FirstGoal: {
-      Over: identifyTopBook(playerMarkets, "First Goal", false),
-      Under: identifyTopBook(playerMarkets, "First Goal", true),
+    Saves: {
+      Over: identifyTopBook(playerMarkets, "Saves", false),
+      Under: identifyTopBook(playerMarkets, "Saves", true),
     },
-    Shots: {
-      Over: identifyTopBook(playerMarkets, "Shots", false),
-      Under: identifyTopBook(playerMarkets, "Shots", true),
+    PPPoints: {
+      Over: identifyTopBook(playerMarkets, "PP Points", false),
+      Under: identifyTopBook(playerMarkets, "PP Points", true),
     },
   };
 
   const defineClassOfCell = (stat, sportsbook, overunder) => {
-    if (highlighting[stat]) {
-      return highlighting[stat][overunder].book === sportsbook
-        ? BP[stat] === ""
-          ? "infoBorder"
-          : BP[stat] < 100
-          ? "markgreen"
-          : "infoBorder"
+    let refinedStat;
+    if (stat === "Points (NHL)") {
+      refinedStat = "Points";
+    } else if (stat === "Goals (NHL)") {
+      refinedStat = "Goals";
+    } else if (stat === "Assists (NHL)") {
+      refinedStat = "Assists";
+    } else if (stat === "PP Points") {
+      refinedStat = "PPPoints";
+    } else if (stat === "Shots On Goal") {
+      refinedStat = "SOG";
+    } else {
+      refinedStat = stat;
+    }
+
+    if (highlighting[refinedStat]) {
+      return highlighting[refinedStat][overunder].book === sportsbook
+        ? BP[refinedStat] === ""
+          ? "infoBorder text-warning font-weight-bold"
+          : BP[refinedStat] < 100
+          ? "markgreen  font-weight-bold"
+          : "infoBorder text-warning font-weight-bold"
         : "";
     } else {
       return "";
@@ -297,16 +289,26 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
     );
   };
 
+  const populateTwoRowSnippet = (stat, sportsbook, isAmerican = false) => {
+    return (
+      <td>
+        <p className={defineClassOfCell(stat, sportsbook, "Over")}>
+          {grabPriceWrapper(stat, sportsbook, false, isAmerican)}
+        </p>
+        <p className={defineClassOfCell(stat, sportsbook, "Under")}>
+          {grabPriceWrapper(stat, sportsbook, true, isAmerican)}
+        </p>
+      </td>
+    );
+  };
+
   const populateSingleRowSnippet = (
     stat,
     sportsbook,
     isUnder = false,
     isAmerican = false
   ) => {
-    let AltStat =
-      stat === "First Basket" && sportsbook === "Kambi"
-        ? "First Field Goal"
-        : stat;
+    let AltStat = stat;
 
     return (
       <td className={defineClassOfCell(stat, sportsbook, "Over")}>
@@ -329,7 +331,7 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
             ? highlighting[stat]["Under"].market.handicap
             : 0);
 
-        if (handicapDiff === 0) {
+        if (handicapDiff <= 0) {
           let oPrice = Number(highlighting[stat]["Over"].market.overPrice);
           let uPrice = Number(highlighting[stat]["Under"].market.underPrice);
 
@@ -357,8 +359,14 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
     Assists: defineEffectiveBP("Assists")
       ? Number(defineEffectiveBP("Assists").replace("%", ""))
       : "",
-    Shots: defineEffectiveBP("Shots")
-      ? Number(defineEffectiveBP("Shots").replace("%", ""))
+    Saves: defineEffectiveBP("Saves")
+      ? Number(defineEffectiveBP("Saves").replace("%", ""))
+      : "",
+    PPPoints: defineEffectiveBP("PPPoints")
+      ? Number(defineEffectiveBP("PPPoints").replace("%", ""))
+      : "",
+    SOG: defineEffectiveBP("SOG")
+      ? Number(defineEffectiveBP("SOG").replace("%", ""))
       : "",
   };
 
@@ -375,32 +383,171 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
       BP.Assists < 100
         ? "font-weight-bold text-success"
         : "font-weight-light font-italic",
-    Shots:
-      BP.Shots < 100
+    Saves:
+      BP.Saves < 100
+        ? "font-weight-bold text-success"
+        : "font-weight-light font-italic",
+    PPPoints:
+      BP.PPPoints < 100
+        ? "font-weight-bold text-success"
+        : "font-weight-light font-italic",
+    SOG:
+      BP.SOG < 100
         ? "font-weight-bold text-success"
         : "font-weight-light font-italic",
   };
 
-  const bookNames = ["PointsBet", "Kambi", "William Hill", "Superbook"];
+  const bookNames = [
+    "PointsBet",
+    "DraftKings",
+    "William Hill",
+    "Bovada",
+    "MaximBet",
+    "FoxBet",
+    "Rivers",
+  ];
 
   const openInNewTab = (url) => {
     const newWindow = window.open(url, "_blank", "noopener,noreferrer");
     if (newWindow) newWindow.opener = null;
   };
 
+  const SOGRows = () => {
+    if (!(doesMarketExist(playerMarkets, "Shots On Goal") > 0)) {
+      return null;
+    }
+
+    return (
+      <tr>
+        <td colspan="2">
+          <p className="font-weight-bold align-middle">Shots On Goal</p>
+          <p>Over</p>
+          <p>Under</p>
+        </td>
+
+        {bookNames.map((book) => {
+          return populateThreeRowSnippet("Shots On Goal", book, isAmerican);
+        })}
+      </tr>
+    );
+  };
+
+  const PointsRows = () => {
+    if (!(doesMarketExist(playerMarkets, "Points (NHL)") > 0)) {
+      return null;
+    }
+
+    return (
+      <tr>
+        <td colspan="2">
+          <p className="font-weight-bold align-middle">Points</p>
+          <p>Over</p>
+          <p>Under</p>
+        </td>
+
+        {bookNames.map((book) => {
+          return populateThreeRowSnippet("Points (NHL)", book, isAmerican);
+        })}
+      </tr>
+    );
+  };
+
+  const GoalsRows = () => {
+    if (!(doesMarketExist(playerMarkets, "Goals (NHL)") > 0)) {
+      return null;
+    }
+
+    return (
+      <tr>
+        <td colspan="2">
+          <p className="font-weight-bold align-middle">Anytime Goalscorer</p>
+        </td>
+
+        {bookNames.map((book) => {
+          return populateSingleRowSnippet("Goals (NHL)", book, isAmerican);
+        })}
+      </tr>
+    );
+  };
+
+  const AssistsRows = () => {
+    if (!(doesMarketExist(playerMarkets, "Assists (NHL)") > 0)) {
+      return null;
+    }
+
+    return (
+      <tr>
+        <td colspan="2">
+          <p className="font-weight-bold align-middle">Assists</p>
+          <p>Over</p>
+          <p>Under</p>
+        </td>
+
+        {bookNames.map((book) => {
+          return populateThreeRowSnippet("Assists (NHL)", book, isAmerican);
+        })}
+      </tr>
+    );
+  };
+
+  const SavesRows = () => {
+    if (!(doesMarketExist(playerMarkets, "Saves") > 0)) {
+      return null;
+    }
+
+    return (
+      <tr>
+        <td colspan="2">
+          <p className="font-weight-bold align-middle">Saves</p>
+          <p>Over</p>
+          <p>Under</p>
+        </td>
+
+        {bookNames.map((book) => {
+          return populateThreeRowSnippet("Saves", book, isAmerican);
+        })}
+      </tr>
+    );
+  };
+
+  const PPPRows = () => {
+    if (!(doesMarketExist(playerMarkets, "PP Points") > 0)) {
+      return null;
+    }
+
+    return (
+      <tr>
+        <td colspan="2">
+          <p className="font-weight-bold align-middle">Power Play Points</p>
+          <p>Over</p>
+          <p>Under</p>
+        </td>
+
+        {bookNames.map((book) => {
+          return populateThreeRowSnippet("PP Points", book, isAmerican);
+        })}
+      </tr>
+    );
+  };
+
   return (
-    <div className="card bg-white border border-info">
+    <div className="card bg-light-alt border border-info card-shadow">
       {getARedirect(redirect)}
+
+      <a className="text-white" href={Bballreference} target="_blank">
+        <div className="card-header lead bg-info-alt">
+          <h3 className="card-title text-white text-center  font-weight-bold">
+            <u>{`${playerNameForDisplay}`}</u>
+          </h3>
+        </div>
+      </a>
+
       <div className="card-body">
-        <h3 className="card-title text-dark text-center  font-weight-bold">
-          <u>{`${playerNameForDisplay}${teamAndPosition}`}</u>
-        </h3>
-        <p className="text-dark text-center font-weight-light font-italic"></p>
         <div className="container">
-          <table className="table table-striped text-center">
+          <table className="table table-striped text-center p-2">
             <thead>
               <tr>
-                <th scope="col" className="align-middle"></th>
+                <th scope="col" className="align-middle" colspan="2"></th>
                 <th scope="col" className="align-middle">
                   PointsBet
                 </th>
@@ -408,79 +555,29 @@ const CardMarkets_NHL = ({ market, player, isUnder, isAmerican }) => {
                   DraftKings
                 </th>
                 <th scope="col" className="align-middle">
-                  William Hill
+                  Caesars
                 </th>
                 <th scope="col" className="align-middle">
-                  Superbook
+                  Bovada
+                </th>
+                <th scope="col" className="align-middle">
+                  MaximBet
+                </th>
+                <th scope="col" className="align-middle">
+                  FoxBet
+                </th>
+                <th scope="col" className="align-middle">
+                  BetRivers
                 </th>
               </tr>
             </thead>
-            <tr>
-              <td className="font-weight-bold align-middle">First Goal</td>
-              {bookNames.map((book) => {
-                return populateSingleRowSnippet(
-                  "First Goal",
-                  book,
-                  isUnder,
-                  isAmerican
-                );
-              })}
-            </tr>
 
-            <tr>
-              <td>
-                <p className="font-weight-bold align-middle">Goals</p>
-                <p>Over</p>
-                <p>Under</p>
-              </td>
-
-              {bookNames.map((book) => {
-                return populateThreeRowSnippet("Goals", book, isAmerican);
-              })}
-            </tr>
-
-            <tr>
-              <td>
-                <p className="font-weight-bold align-middle">Points</p>
-                <p>Over</p>
-                <p>Under</p>
-              </td>
-              {bookNames.map((book) => {
-                return populateThreeRowSnippet("Points", book, isAmerican);
-              })}
-            </tr>
-            <tr>
-              <td>
-                <p className="font-weight-bold align-middle">Shots On Target</p>
-                <p>Over</p>
-                <p>Under</p>
-              </td>
-              {bookNames.map((book) => {
-                return populateThreeRowSnippet("Shots", book, isAmerican);
-              })}
-            </tr>
-            <tr>
-              <td>
-                <p className="font-weight-bold align-middle">Assists</p>
-                <p>Over</p>
-                <p>Under</p>
-              </td>
-
-              {bookNames.map((book) => {
-                return populateThreeRowSnippet("Assists", book, isAmerican);
-              })}
-            </tr>
-
-            <tr>
-              <td colSpan="5">
-                <button
-                  className="btn btn-block border bg-light"
-                  onClick={() => openInNewTab(Bballreference)}
-                >
-                  Research <em>{playerNameForDisplay}</em> at Hockey Reference
-                </button>
-              </td>
-            </tr>
+            <SavesRows />
+            <GoalsRows />
+            <SOGRows />
+            <PointsRows />
+            <AssistsRows />
+            <PPPRows />
           </table>
         </div>
       </div>

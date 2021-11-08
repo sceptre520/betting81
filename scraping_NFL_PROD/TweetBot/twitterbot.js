@@ -1,6 +1,22 @@
-const config = require("./config");
+require("dotenv").config({ path: __dirname + "/.env" });
+
 const twitter = require("twitter-lite");
-const client = new twitter(config);
+const client = new twitter({
+  subdomain: "api", // "api" is the default (change for other subdomains)
+  version: "1.1", // version "1.1" is the default (change for other subdomains)
+  consumer_key: process.env.CONSUMER_KEY, // from Twitter.
+  consumer_secret: process.env.CONSUMER_SECRET, // from Twitter.
+  access_token_key: process.env.ACCESS_TOKEN_KEY, // from your User (oauth_token)
+  access_token_secret: process.env.ACCESS_TOKEN_SECRET, // from your User (oauth_token_secret)
+});
+
+//  //verify twitter connection
+// client
+//   .get("account/verify_credentials")
+//   .then((results) => {
+//     console.log("results", results);
+//   })
+//   .catch(console.error);
 
 const fetch = require("node-fetch");
 const API = "http://localhost:8000/api";
@@ -19,7 +35,7 @@ const queryForAllArbs = () => {
   return arbList;
 };
 
-exports.TweetArbs = async (minimumMiddle) => {
+const TweetMiddles = async (minimumMiddle) => {
   console.log(
     "Checking for middles >=" + minimumMiddle + " points to tweet..."
   );
@@ -120,8 +136,9 @@ exports.TweetArbs = async (minimumMiddle) => {
           if (Candidates.length) {
             const myMiddle = Candidates[0];
             //console.log(myMiddle);
-            const TweetString = createTweetString(myMiddle);
-            const twitResponse = await Tweet(TweetString);
+            const TweetString = createTweetStringMiddle(myMiddle);
+            const TweetStringWithHashtags = addHashtags(TweetString);
+            const twitResponse = await Tweet(TweetStringWithHashtags);
             console.log(twitResponse);
             const alert = {
               medium: "Twitter @playerpropodds",
@@ -136,11 +153,23 @@ exports.TweetArbs = async (minimumMiddle) => {
       }
     }
   }
-  console.log("Done tweeting arbs.");
+  console.log("Done tweeting middles.");
 };
 
-const createTweetString = (middle) => {
-  return `${middle.middleSize} point middle\r\n${middle.league}: ${middle.player} ${middle.marketType} Yds\r\n${middle.Ohandicap} ${middle.overString}\r\n${middle.Uhandicap} ${middle.underString}`;
+const createTweetStringMiddle = (middle) => {
+  return `${middle.middleSize} point middle\r\n${middle.league}: ${middle.player} ${middle.marketType}\r\n${middle.Ohandicap} ${middle.overString}\r\n${middle.Uhandicap} ${middle.underString}`;
+};
+
+const createTweetStringArb = (arb) => {
+  return `${arb.bookPerc.toFixed(3) * 100}% arb\r\n${arb.league}: ${
+    arb.player
+  } ${arb.marketType}\r\n${arb.Ohandicap ? arb.Ohandicap : ""} ${
+    arb.overString
+  }\r\n${arb.Uhandicap ? arb.Uhandicap : ""} ${arb.underString}`;
+};
+
+const addHashtags = (string) => {
+  return `${string}\r\n#GamblingTwitter #Arbitrage`;
 };
 
 const Tweet = (TweetString) => {
@@ -190,3 +219,127 @@ const queryForAllAlerts = async () => {
 
 // const minimumMiddle = 5;
 // TweetArbs(minimumMiddle);
+
+const TweetArbs = async (maxBookPerc) => {
+  console.log("Checking for arbs <=" + maxBookPerc * 100 + "% to tweet...");
+  const data = await queryForAllArbs();
+  if (data.error) {
+    console.log(data.error);
+  } else {
+    if (data) {
+      const Output = data.map((arb) => {
+        if (arb.overMarketId && arb.underMarketId) {
+          if (arb.overMarketId.matchId) {
+            let league = arb.overMarketId.matchId.league;
+            let matchName = arb.overMarketId.matchId.name;
+            let matchId = arb.overMarketId.matchId._id;
+            let player = arb.overMarketId.player;
+            let marketType = arb.overMarketId.marketType;
+            let Ohandicap = arb.overMarketId.handicap;
+            let Uhandicap = arb.underMarketId.handicap;
+            let overSportsbook = arb.overMarketId.sportsbook;
+            let overPrice = arb.overMarketId.overPrice;
+
+            let underSportsbook = arb.underMarketId.sportsbook;
+            let underPrice = arb.underMarketId.underPrice;
+
+            let overString = `Over $${overPrice.toFixed(
+              2
+            )} (${overSportsbook})`;
+            let underString = `Under $${underPrice.toFixed(
+              2
+            )} (${underSportsbook})`;
+            return {
+              arbId: arb._id,
+              ArbOrMiddle: arb.ArbOrMiddle,
+              matchId: matchId,
+              matchPath: `/match/${matchId}`,
+              league: league,
+              matchName: matchName,
+              player: player,
+              marketType: marketType,
+              Ohandicap: Ohandicap,
+              Uhandicap: Uhandicap,
+              overString: overString,
+              underString: underString,
+              bookPerc: 1 / overPrice + 1 / underPrice,
+              middleSize: Uhandicap - Ohandicap,
+            };
+          }
+        }
+      });
+
+      const arbInstances = Output.filter((o) => {
+        if (o) {
+          return o.ArbOrMiddle === "arb" && o.bookPerc <= maxBookPerc;
+        }
+      });
+
+      const sortedArbInstances = arbInstances
+        .sort((a, b) => {
+          return b.middleSize - a.middleSize;
+        })
+        .sort((a, b) => {
+          return a.bookPerc - b.bookPerc;
+        });
+
+      if (sortedArbInstances) {
+        let OutputVar = [];
+        let OutputId = [];
+
+        sortedArbInstances.forEach((i) => {
+          const thisVar = i.player + "|" + i.marketType + "|" + i.matchPath;
+
+          if (!OutputVar.includes(thisVar)) {
+            OutputVar.push(thisVar);
+            OutputId.push(i.arbId);
+          }
+        });
+
+        const ArbsUnique = sortedArbInstances.filter((o) => {
+          return OutputId.includes(o.arbId);
+        });
+
+        if (ArbsUnique) {
+          const allAlertsInDB = await queryForAllAlerts();
+
+          const allRecentAlertsInDB = allAlertsInDB.map((alert) => {
+            return alert.matchId + alert.player + alert.marketType;
+          });
+
+          const Candidates = ArbsUnique.filter((arb) => {
+            const thisIndex = arb.matchId + arb.player + arb.marketType;
+            const inDB = allRecentAlertsInDB
+              ? allRecentAlertsInDB.includes(thisIndex)
+              : false;
+            return !inDB;
+          });
+
+          if (Candidates.length) {
+            const myArb = Candidates[0];
+            // console.log(myArb);
+            const TweetString = createTweetStringArb(myArb);
+            //console.log(TweetString);
+            const TweetStringWithHashtags = addHashtags(TweetString);
+            const twitResponse = await Tweet(TweetStringWithHashtags);
+            console.log(twitResponse);
+            const alert = {
+              medium: "Twitter @playerpropodds",
+              alertText: TweetString,
+              matchId: myArb.matchId,
+              player: myArb.player,
+              marketType: myArb.marketType,
+            };
+            const alertResponse = await createAlertInDB(alert);
+          }
+        }
+      }
+    }
+  }
+  console.log("Done tweeting arbs.");
+};
+
+module.exports = {
+  TweetArbs,
+  TweetMiddles,
+};

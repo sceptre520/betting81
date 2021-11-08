@@ -149,7 +149,11 @@ const MatchMarkets = ({ match }) => {
           });
         })
         .filter((o) => {
-          return !o.includes("efense") && !o.includes("ouchdown");
+          return (
+            !o.includes("efense") &&
+            !o.includes("ouchdown") &&
+            !o.includes("oalscorer")
+          );
         })
     );
   };
@@ -348,13 +352,17 @@ const MatchMarkets = ({ match }) => {
       );
     } else if (league === "NHL") {
       return (
-        <div key={index} className="col-6 mb-4">
-          <CardMarkets_NHL
-            market={markets}
-            player={thisPlayer}
-            isUnder={isUnder}
-            isAmerican={oddsPref}
-          />
+        <div className="row">
+          <div key={index} className="col-1"></div>
+          <div key={index} className="col-10 mb-4">
+            <CardMarkets_NHL
+              market={markets}
+              player={thisPlayer}
+              isUnder={isUnder}
+              isAmerican={oddsPref}
+            />
+          </div>
+          <div key={index} className="col-1"></div>
         </div>
       );
     } else if (league === "NFL") {

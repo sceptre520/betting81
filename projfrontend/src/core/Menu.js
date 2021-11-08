@@ -46,6 +46,15 @@ const Menu = ({ history }) => (
       </li>
       <li className="nav-item">
         <Link
+          style={currentTab(history, "/nhl-player-prop-arb-bets")}
+          className="nav-link"
+          to="/nhl-player-prop-arb-bets"
+        >
+          NHL
+        </Link>
+      </li>
+      <li className="nav-item">
+        <Link
           style={currentTab(history, "/about")}
           className="nav-link"
           to="/about"

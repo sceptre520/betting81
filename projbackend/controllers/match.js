@@ -124,7 +124,7 @@ exports.deleteAllMatches = (req, res) => {
 
 exports.deleteOldMatches = (req, res) => {
   var datestamp = new Date();
-  datestamp.setDate(datestamp.getDate() - 1);
+  datestamp.setUTCHours(datestamp.getUTCHours() - 8);
 
   Match.deleteMany({ date: { $lt: datestamp } }, (err) => {
     if (err) {
