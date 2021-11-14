@@ -25,7 +25,7 @@ exports.identifyArbs = async () => {
   //     })
   //   ),
   // ];
-  const uniqueMatches = data.map(market => a.market.matchId._id);
+  const uniqueMatches = data.map(market => market.matchId._id);
 
   console.log('----   uniqueMatches   -----')
   console.log(uniqueMatches)
