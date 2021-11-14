@@ -18,13 +18,14 @@ exports.identifyArbs = async () => {
   let middles = [];
 
   //unique matches
-  const uniqueMatches = [
-    ...new Set(
-      data.map((market) => {
-        return market.matchId._id;
-      })
-    ),
-  ];
+  // const uniqueMatches = [
+  //   ...new Set(
+  //     data.map((market) => {
+  //       return market.matchId._id;
+  //     })
+  //   ),
+  // ];
+  const uniqueMatches = data.map(market => a.market.matchId._id);
 
   console.log('----   uniqueMatches   -----')
   console.log(uniqueMatches)
