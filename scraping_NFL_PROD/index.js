@@ -8,8 +8,12 @@ var View = require("./base");
 
 ////////////////////////////////////////////////////////////
 
-const matchesPB = require("./scraperFiles/scrapeMatchesFromPB_NFL_Refactor");
-const marketsPB = require("./scraperFiles/scrapeMarketsFromPB_NFL_Refactor");
+const matchesWHInitialize = require("./scraperFiles/scrapeMatchesFromWH_Initialize");
+
+////////////////////////////////////////////////////////////
+
+// const matchesPB = require("./scraperFiles/scrapeMatchesFromPB_NFL_Refactor");
+// const marketsPB = require("./scraperFiles/scrapeMarketsFromPB_NFL_Refactor");
 
 const matchesBovada = require("./scraperFiles/scrapeMatchesFromBovada_NFL_Refactor");
 const marketsBovada = require("./scraperFiles/scrapeMarketsFromBovada_NFL_Refactor");
@@ -35,8 +39,8 @@ const ArbIdentification = require("./scraperFiles/arbIdentification_Refactor");
 
 ////////////////////////////////////////////////////////////
 // NBA
-const matchesPB_NBA = require("./scraperFiles/scrapeMatchesFromPB_NBA");
-const marketsPB_NBA = require("./scraperFiles/scrapeMarketsFromPB_NBA");
+// const matchesPB_NBA = require("./scraperFiles/scrapeMatchesFromPB_NBA");
+// const marketsPB_NBA = require("./scraperFiles/scrapeMarketsFromPB_NBA");
 
 const matchesBovada_NBA = require("./scraperFiles/scrapeMatchesFromBovada_NBA");
 const marketsBovada_NBA = require("./scraperFiles/scrapeMarketsFromBovada_NBA");
@@ -58,8 +62,8 @@ const marketsWH_NBA = require("./scraperFiles/scrapeMarketsFromWH_NBA");
 
 ////////////////////////////////////////////////////////////
 // NHL
-const matchesPB_NHL = require("./scraperFiles/scrapeMatchesFromPB_NHL");
-const marketsPB_NHL = require("./scraperFiles/scrapeMarketsFromPB_NHL");
+// const matchesPB_NHL = require("./scraperFiles/scrapeMatchesFromPB_NHL");
+// const marketsPB_NHL = require("./scraperFiles/scrapeMarketsFromPB_NHL");
 
 const matchesBovada_NHL = require("./scraperFiles/scrapeMatchesFromBovada_NHL");
 const marketsBovada_NHL = require("./scraperFiles/scrapeMarketsFromBovada_NHL");
@@ -87,38 +91,36 @@ var pipeline = [null, null, null];
 var cron_cnt = 0;
 var start_time = getNow();
 var run = async () => {
-  //A
+  // A;
   try {
-    console.log("Starting: PB Matches");
-    var PBMatches = await matchesPB.scrapePBMatches();
-    var PBMatchesNBA = await matchesPB_NBA.scrapePBMatches();
-    var PBMatchesNHL = await matchesPB_NHL.scrapePBMatches();
+    console.log("Starting: Initialize Matches");
+    var PBMatches = await matchesWHInitialize.scrapeWHMatches();
     //console.log(PBMatches)
-    console.log("Successful: PB Matches");
+    console.log("Successful: Initialize Matches");
   } catch (error) {
-    console.log("Failed: PB Matches");
+    console.log("Failed: Initialize Matches");
   }
 
   //B1
-  try {
-    console.log("Starting: PB Markets");
-    var PBMarkets = await marketsPB.scrapePBMarkets();
-    //console.log(PBMarkets)
-    console.log("Successful: PB Markets");
-  } catch (error) {
-    console.log("Failed: PB Markets");
-  }
+  // try {
+  //   console.log("Starting: PB Markets");
+  //   var PBMarkets = await marketsPB.scrapePBMarkets();
+  //   //console.log(PBMarkets)
+  //   console.log("Successful: PB Markets");
+  // } catch (error) {
+  //   console.log("Failed: PB Markets");
+  // }
 
-  //B2 & B3
-  try {
-    console.log("Starting: PB Markets");
-    var PBMarketsNBA = await marketsPB_NBA.scrapePBMarkets();
-    var PBMarketsNHL = await marketsPB_NHL.scrapePBMarkets();
-    //console.log(PBMarkets)
-    console.log("Successful: PB Markets");
-  } catch (error) {
-    console.log("Failed: PB Markets");
-  }
+  // //B2 & B3
+  // try {
+  //   console.log("Starting: PB Markets");
+  //   var PBMarketsNBA = await marketsPB_NBA.scrapePBMarkets();
+  //   var PBMarketsNHL = await marketsPB_NHL.scrapePBMarkets();
+  //   //console.log(PBMarkets)
+  //   console.log("Successful: PB Markets");
+  // } catch (error) {
+  //   console.log("Failed: PB Markets");
+  // }
 
   //C1
   try {
@@ -197,7 +199,7 @@ var run = async () => {
 
   //D1
   try {
-    console.log("Starting: Other Markets");
+    console.log("Starting: NFL Markets");
     var [
       BovadaMarkets,
       DKMarkets,
@@ -215,14 +217,14 @@ var run = async () => {
     ]);
 
     //console.log(BovadaMarkets, DKMarkets, FBMarkets,RiversMarkets,SportsBettingMarkets,WHMarkets)
-    console.log("Successful: Other Markets");
+    console.log("Successful: NFL Markets");
   } catch (error) {
-    console.log("Failed: Other Markets");
+    console.log("Failed: NFL Markets");
   }
 
   //D2
   try {
-    console.log("Starting: Other Markets");
+    console.log("Starting: NBA Markets");
 
     var [
       BovadaMarkets_NBA,
@@ -240,14 +242,14 @@ var run = async () => {
       marketsWH_NBA.scrapeWHMarkets(),
     ]);
     //console.log(BovadaMarkets, DKMarkets, FBMarkets,RiversMarkets,SportsBettingMarkets,WHMarkets)
-    console.log("Successful: Other Markets");
+    console.log("Successful: NBA Markets");
   } catch (error) {
-    console.log("Failed: Other Markets");
+    console.log("Failed: NBA Markets");
   }
 
   //D3
   try {
-    console.log("Starting: Other NHL Markets");
+    console.log("Starting: NHL Markets");
 
     var [
       BovadaMarkets_NHL,
@@ -265,9 +267,9 @@ var run = async () => {
       marketsWH_NHL.scrapeWHMarkets(),
     ]);
     //console.log(BovadaMarkets, DKMarkets, FBMarkets,RiversMarkets,SportsBettingMarkets,WHMarkets)
-    console.log("Successful: Other NHL Markets");
+    console.log("Successful: NHL Markets");
   } catch (error) {
-    console.log("Failed: Other NHL Markets");
+    console.log("Failed: NHL Markets");
   }
 
   //E
@@ -280,7 +282,7 @@ var run = async () => {
     console.log("Failed: Arbs");
   }
 
-  F;
+  // F;
   try {
     console.log("Starting: Tweeting");
     var tweet = await TweetArbs(0.995);

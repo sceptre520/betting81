@@ -82,7 +82,7 @@ const InnerLoop = async (
 
         if (OUT2) {
           const BIGOUTS = OUT2.map((o) => {
-            if (o.name.includes(" (")) {
+            if (o.name.includes(" (") && o.price) {
               const nameWithoutBrackets = o.name.split(" (")[0];
               var playerName = nameWithoutBrackets;
               var overPrice = o.price.d;
