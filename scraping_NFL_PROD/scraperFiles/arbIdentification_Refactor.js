@@ -12,9 +12,7 @@ exports.identifyArbs = async () => {
   const a = await deleteArbsFromDB();
 
   const data = await queryForAllMarkets();
-  console.log('-----   fetch data ----')
-  console.log(data)
-  console.log('-----  end fetch data  --')
+  console.log(data.length, 'datas are fetched')
 
   let arbs = [];
   let middles = [];
@@ -120,6 +118,10 @@ exports.identifyArbs = async () => {
       });
     });
   });
+
+  console.log('-----    arb check    -----')
+  console.log(arbs)
+  console.log('-----   arb check end  -----')
 
   if (arbs) {
     const Final1 = await mapLoop(arbs);
