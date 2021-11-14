@@ -26,6 +26,10 @@ exports.identifyArbs = async () => {
     ),
   ];
 
+  console.log('----   uniqueMatches   -----')
+  console.log(uniqueMatches)
+  console.log('----   end uniqueMatches   -----')
+
   const Outer = uniqueMatches.map((matchId) => {
     const relevantData = data.filter((o) => {
       return o.matchId._id === matchId;
