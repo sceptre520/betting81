@@ -12,6 +12,9 @@ exports.identifyArbs = async () => {
   const a = await deleteArbsFromDB();
 
   const data = await queryForAllMarkets();
+  console.log('-----   fetch data ----')
+  console.log(data)
+  console.log('-----  end fetch data  --')
 
   let arbs = [];
   let middles = [];
