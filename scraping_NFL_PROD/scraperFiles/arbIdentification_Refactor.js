@@ -25,11 +25,12 @@ exports.identifyArbs = async () => {
   //     })
   //   ),
   // ];
-  const uniqueMatches = data.map(market => market.matchId._id);
+  const uniqueMatches = data.map(market => market.matchId);
 
   console.log('----   uniqueMatches   -----')
   console.log(uniqueMatches)
   console.log('----   end uniqueMatches   -----')
+  return;
 
   const Outer = uniqueMatches.map((matchId) => {
     const relevantData = data.filter((o) => {
