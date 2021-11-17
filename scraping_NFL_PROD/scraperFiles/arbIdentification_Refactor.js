@@ -12,25 +12,18 @@ exports.identifyArbs = async () => {
   const a = await deleteArbsFromDB();
 
   const data = await queryForAllMarkets();
-  console.log(data.length, 'datas are fetched')
 
   let arbs = [];
   let middles = [];
 
   //unique matches
-  // const uniqueMatches = [
-  //   ...new Set(
-  //     data.map((market) => {
-  //       return market.matchId._id;
-  //     })
-  //   ),
-  // ];
-  const uniqueMatches = data.map(market => market.matchId);
-
-  console.log('----   uniqueMatches   -----')
-  console.log(uniqueMatches)
-  console.log('----   end uniqueMatches   -----')
-  return;
+  const uniqueMatches = [
+    ...new Set(
+      data.map((market) => {
+        return market.matchId._id;
+      })
+    ),
+  ];
 
   const Outer = uniqueMatches.map((matchId) => {
     const relevantData = data.filter((o) => {
@@ -124,10 +117,6 @@ exports.identifyArbs = async () => {
       });
     });
   });
-
-  console.log('-----    arb check    -----')
-  console.log(arbs)
-  console.log('-----   arb check end  -----')
 
   if (arbs) {
     const Final1 = await mapLoop(arbs);
